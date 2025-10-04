@@ -6,9 +6,10 @@ import { Register } from './auth/Register'
 import { SchedulesSearch } from './schedules/SchedulesSearch'
 import { ScheduleDetail } from './schedules/ScheduleDetail'
 import { BookingFlow } from './booking/BookingFlow'
+import { MyTickets } from './tickets/MyTickets'
 
 export const App: React.FC = () => {
-  const [view, setView] = React.useState<'home' | 'login' | 'register' | 'schedules' | 'scheduleDetail' | 'booking'>('home')
+  const [view, setView] = React.useState<'home' | 'login' | 'register' | 'schedules' | 'scheduleDetail' | 'booking' | 'myTickets'>('home')
   const [selectedScheduleId, setSelectedScheduleId] = React.useState<string | null>(null)
 
   const goDetail = (id: string) => {
@@ -30,6 +31,7 @@ export const App: React.FC = () => {
             <div className="space-x-2">
               <button className="px-2 py-1 border rounded" onClick={()=>setView('home')}>Home</button>
               <button className="px-2 py-1 border rounded" onClick={()=>setView('schedules')}>Schedules</button>
+              <button className="px-2 py-1 border rounded" onClick={()=>setView('myTickets')}>My Tickets</button>
               <button className="px-2 py-1 border rounded" onClick={()=>setView('login')}>Login</button>
               <button className="px-2 py-1 border rounded" onClick={()=>setView('register')}>Register</button>
             </div>
@@ -41,8 +43,9 @@ export const App: React.FC = () => {
             <ScheduleDetail id={selectedScheduleId} onBack={()=>setView('schedules')} onBook={()=>goBooking(selectedScheduleId)} />
           )}
           {view === 'booking' && selectedScheduleId && (
-            <BookingFlow scheduleId={selectedScheduleId} onBack={()=>setView('schedules')} onSuccess={()=>setView('home')} />
+            <BookingFlow scheduleId={selectedScheduleId} onBack={()=>setView('schedules')} onSuccess={()=>setView('myTickets')} />
           )}
+          {view === 'myTickets' && <MyTickets />}
           {view === 'login' && <Login />}
           {view === 'register' && <Register />}
         </div>
