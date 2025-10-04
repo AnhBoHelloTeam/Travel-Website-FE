@@ -1,7 +1,7 @@
 import React from 'react'
 import axios from 'axios'
 
-export const ScheduleDetail: React.FC<{ id: string, onBack: () => void }> = ({ id, onBack }) => {
+export const ScheduleDetail: React.FC<{ id: string, onBack: () => void, onBook?: () => void }> = ({ id, onBack, onBook }) => {
   const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
   const [data, setData] = React.useState<any>(null)
   const [loading, setLoading] = React.useState(false)
@@ -48,6 +48,11 @@ export const ScheduleDetail: React.FC<{ id: string, onBack: () => void }> = ({ i
                 </div>
               ))}
             </div>
+          </div>
+          <div className="mt-4">
+            <button onClick={onBook} className="px-4 py-2 bg-blue-600 text-white rounded">
+              Book This Schedule
+            </button>
           </div>
         </div>
       )}
