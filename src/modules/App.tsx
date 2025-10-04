@@ -5,14 +5,20 @@ import { Login } from './auth/Login'
 import { Register } from './auth/Register'
 import { SchedulesSearch } from './schedules/SchedulesSearch'
 import { ScheduleDetail } from './schedules/ScheduleDetail'
+import { BookingFlow } from './booking/BookingFlow'
 
 export const App: React.FC = () => {
-  const [view, setView] = React.useState<'home' | 'login' | 'register' | 'schedules' | 'scheduleDetail'>('home')
+  const [view, setView] = React.useState<'home' | 'login' | 'register' | 'schedules' | 'scheduleDetail' | 'booking'>('home')
   const [selectedScheduleId, setSelectedScheduleId] = React.useState<string | null>(null)
 
   const goDetail = (id: string) => {
     setSelectedScheduleId(id)
     setView('scheduleDetail')
+  }
+
+  const goBooking = (id: string) => {
+    setSelectedScheduleId(id)
+    setView('booking')
   }
 
   return (
@@ -32,7 +38,10 @@ export const App: React.FC = () => {
           {view === 'home' && <Home />}
           {view === 'schedules' && <SchedulesSearch onSelect={goDetail} />}
           {view === 'scheduleDetail' && selectedScheduleId && (
-            <ScheduleDetail id={selectedScheduleId} onBack={()=>setView('schedules')} />
+            <ScheduleDetail id={selectedScheduleId} onBack={()=>setView('schedules')} onBook={()=>goBooking(selectedScheduleId)} />
+          )}
+          {view === 'booking' && selectedScheduleId && (
+            <BookingFlow scheduleId={selectedScheduleId} onBack={()=>setView('schedules')} onSuccess={()=>setView('home')} />
           )}
           {view === 'login' && <Login />}
           {view === 'register' && <Register />}
