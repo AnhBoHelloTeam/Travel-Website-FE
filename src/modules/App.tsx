@@ -7,10 +7,12 @@ import { SchedulesSearch } from './schedules/SchedulesSearch'
 import { ScheduleDetail } from './schedules/ScheduleDetail'
 import { BookingFlow } from './booking/BookingFlow'
 import { MyTickets } from './tickets/MyTickets'
+import { AdminDashboard } from './admin/AdminDashboard'
 
 export const App: React.FC = () => {
-  const [view, setView] = React.useState<'home' | 'login' | 'register' | 'schedules' | 'scheduleDetail' | 'booking' | 'myTickets'>('home')
+  const [view, setView] = React.useState<'home' | 'login' | 'register' | 'schedules' | 'scheduleDetail' | 'booking' | 'myTickets' | 'admin'>('home')
   const [selectedScheduleId, setSelectedScheduleId] = React.useState<string | null>(null)
+  const { user } = useAuth()
 
   const goDetail = (id: string) => {
     setSelectedScheduleId(id)
@@ -32,6 +34,9 @@ export const App: React.FC = () => {
               <button className="px-2 py-1 border rounded" onClick={()=>setView('home')}>Home</button>
               <button className="px-2 py-1 border rounded" onClick={()=>setView('schedules')}>Schedules</button>
               <button className="px-2 py-1 border rounded" onClick={()=>setView('myTickets')}>My Tickets</button>
+              {user?.role === 'admin' && (
+                <button className="px-2 py-1 border rounded bg-purple-100" onClick={()=>setView('admin')}>Admin</button>
+              )}
               <button className="px-2 py-1 border rounded" onClick={()=>setView('login')}>Login</button>
               <button className="px-2 py-1 border rounded" onClick={()=>setView('register')}>Register</button>
             </div>
@@ -46,6 +51,7 @@ export const App: React.FC = () => {
             <BookingFlow scheduleId={selectedScheduleId} onBack={()=>setView('schedules')} onSuccess={()=>setView('myTickets')} />
           )}
           {view === 'myTickets' && <MyTickets />}
+          {view === 'admin' && <AdminDashboard />}
           {view === 'login' && <Login />}
           {view === 'register' && <Register />}
         </div>
