@@ -21,6 +21,9 @@ export const SchedulesSearch: React.FC<Props> = ({ onSelect }) => {
 
   const [filters, setFilters] = React.useState({
     vehicleType: '',
+    vehicleCategory: '',
+    capacityMin: '',
+    capacityMax: '',
     status: 'active',
     date: ''
   })
@@ -34,6 +37,9 @@ export const SchedulesSearch: React.FC<Props> = ({ onSelect }) => {
     try {
       const params: any = {}
       if (filters.vehicleType) params.vehicleType = filters.vehicleType
+      if (filters.vehicleCategory) params.vehicleCategory = filters.vehicleCategory
+      if (filters.capacityMin) params.capacityMin = filters.capacityMin
+      if (filters.capacityMax) params.capacityMax = filters.capacityMax
       if (filters.status) params.status = filters.status
       if (filters.date) params.date = filters.date
       const res = await axios.get(`${apiBase}/api/schedules`, { params })
@@ -64,12 +70,31 @@ export const SchedulesSearch: React.FC<Props> = ({ onSelect }) => {
             </select>
           </div>
           <div>
+            <label className="block text-sm mb-1">Vehicle Category</label>
+            <select className="w-full border rounded px-3 py-2" value={filters.vehicleCategory} onChange={e=>setFilters(f=>({ ...f, vehicleCategory: e.target.value }))}>
+              <option value="">All</option>
+              <option value="bus16">Bus 16</option>
+              <option value="bus32">Bus 32</option>
+              <option value="limousine">Limousine</option>
+              <option value="sleeper">Sleeper</option>
+              <option value="sitting">Sitting</option>
+            </select>
+          </div>
+          <div>
             <label className="block text-sm mb-1">Status</label>
             <select className="w-full border rounded px-3 py-2" value={filters.status} onChange={e=>setFilters(f=>({ ...f, status: e.target.value }))}>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
               <option value="cancelled">Cancelled</option>
             </select>
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Capacity Min</label>
+            <input type="number" className="w-full border rounded px-3 py-2" value={filters.capacityMin} onChange={e=>setFilters(f=>({ ...f, capacityMin: e.target.value }))} />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Capacity Max</label>
+            <input type="number" className="w-full border rounded px-3 py-2" value={filters.capacityMax} onChange={e=>setFilters(f=>({ ...f, capacityMax: e.target.value }))} />
           </div>
           <div>
             <label className="block text-sm mb-1">Date</label>

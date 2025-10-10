@@ -23,6 +23,9 @@ export const BusinessDashboard: React.FC = () => {
     arrivalTime: '',
     price: 0,
     vehicleType: 'sleeping',
+    vehicleCategory: 'sitting',
+    capacity: 40,
+    seatLayout: '2-2',
     status: 'active',
     maxSeats: 40
   })
@@ -174,6 +177,17 @@ export const BusinessDashboard: React.FC = () => {
     }
   }, [activeTab])
 
+  // Suggest defaults for capacity/layout when vehicleCategory changes
+  const applyVehicleDefaults = (category: string) => {
+    switch (category) {
+      case 'bus16':     return { capacity: 16, seatLayout: '2-2' }
+      case 'bus32':     return { capacity: 32, seatLayout: '2-2' }
+      case 'limousine': return { capacity: 12, seatLayout: '2-1' }
+      case 'sleeper':   return { capacity: 40, seatLayout: '2-1' }
+      default:          return { capacity: 40, seatLayout: '2-2' }
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'text-green-600 bg-green-50'
@@ -223,6 +237,10 @@ export const BusinessDashboard: React.FC = () => {
               form={scheduleForm}
               setForm={setScheduleForm}
               onSubmit={createSchedule}
+              onCategoryChange={(cat)=>{
+                const d = applyVehicleDefaults(cat)
+                setScheduleForm((prev: any)=>({ ...prev, vehicleCategory: cat, capacity: d.capacity, seatLayout: d.seatLayout }))
+              }}
               submitLabel="Create"
             />
           )}
@@ -233,6 +251,10 @@ export const BusinessDashboard: React.FC = () => {
               setForm={setScheduleForm}
               onSubmit={updateSchedule}
               onCancel={cancelEdit}
+              onCategoryChange={(cat)=>{
+                const d = applyVehicleDefaults(cat)
+                setScheduleForm((prev: any)=>({ ...prev, vehicleCategory: cat, capacity: d.capacity, seatLayout: d.seatLayout }))
+              }}
               submitLabel="Update"
             />
           )}
@@ -393,7 +415,8 @@ const ScheduleForm: React.FC<{
   onSubmit: () => void
   onCancel?: () => void
   submitLabel: string
-}> = ({ form, setForm, onSubmit, onCancel, submitLabel }) => {
+  onCategoryChange?: (cat: string) => void
+}> = ({ form, setForm, onSubmit, onCancel, submitLabel, onCategoryChange }) => {
   return (
     <div className="bg-white border rounded p-4 space-y-3">
       <h3 className="text-lg font-semibold">Schedule</h3>
@@ -408,11 +431,32 @@ const ScheduleForm: React.FC<{
           </select>
         </div>
         <div>
+          <label className="block text-sm mb-1">Vehicle Category</label>
+          <select className="w-full border rounded px-3 py-2" value={form.vehicleCategory} onChange={e=>{
+            setForm((prev: any)=>({ ...prev, vehicleCategory: e.target.value }));
+            onCategoryChange && onCategoryChange(e.target.value)
+          }}>
+            <option value="sitting">Sitting</option>
+            <option value="bus16">Bus 16</option>
+            <option value="bus32">Bus 32</option>
+            <option value="limousine">Limousine</option>
+            <option value="sleeper">Sleeper</option>
+          </select>
+        </div>
+        <div>
           <label className="block text-sm mb-1">Vehicle Type</label>
           <select className="w-full border rounded px-3 py-2" value={form.vehicleType} onChange={e=>setForm((prev: any)=>({ ...prev, vehicleType: e.target.value }))}>
             <option value="sitting">Sitting</option>
             <option value="sleeping">Sleeping</option>
           </select>
+        </div>
+        <div>
+          <label className="block text-sm mb-1">Capacity</label>
+          <input type="number" className="w-full border rounded px-3 py-2" value={form.capacity} onChange={e=>setForm((prev: any)=>({ ...prev, capacity: Number(e.target.value) }))} />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">Seat Layout</label>
+          <input className="w-full border rounded px-3 py-2" placeholder="e.g. 2-2 or 2-1" value={form.seatLayout} onChange={e=>setForm((prev: any)=>({ ...prev, seatLayout: e.target.value }))} />
         </div>
         <div>
           <label className="block text-sm mb-1">Departure Time</label>
