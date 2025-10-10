@@ -26,26 +26,28 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
-      <div className="mx-auto max-w-3xl p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Travel Website</h1>
-          <div className="space-x-2">
-            <button className="px-2 py-1 border rounded" onClick={()=>setView('home')}>Home</button>
-            <button className="px-2 py-1 border rounded" onClick={()=>setView('schedules')}>Schedules</button>
-            <button className="px-2 py-1 border rounded" onClick={()=>setView('myTickets')}>My Tickets</button>
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col">
+      <header className="bg-white border-b">
+        <div className="mx-auto max-w-5xl p-4 flex items-center justify-between">
+          <div className="font-bold text-xl">Travel Website</div>
+          <nav className="space-x-3 text-sm">
+            <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>setView('home')}>Home</button>
+            <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>setView('schedules')}>Schedules</button>
+            <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>setView('myTickets')}>My Tickets</button>
             {user?.role === 'admin' && (
-              <button className="px-2 py-1 border rounded bg-purple-100" onClick={()=>setView('admin')}>Admin</button>
+              <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>setView('admin')}>Admin</button>
             )}
             {user?.role === 'business' && (
-              <button className="px-2 py-1 border rounded bg-blue-100" onClick={()=>setView('business')}>Business</button>
+              <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>setView('business')}>Business</button>
             )}
-            <button className="px-2 py-1 border rounded" onClick={()=>setView('login')}>Login</button>
-            <button className="px-2 py-1 border rounded" onClick={()=>setView('register')}>Register</button>
-          </div>
+            <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>setView('login')}>Login</button>
+            <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>setView('register')}>Register</button>
+          </nav>
         </div>
+      </header>
 
-        {view === 'home' && <Home />}
+      <main className="mx-auto max-w-5xl p-6 flex-1 w-full">
+        {view === 'home' && <Home onNavigate={setView} />}
         {view === 'schedules' && <SchedulesSearch onSelect={goDetail} />}
         {view === 'scheduleDetail' && selectedScheduleId && (
           <ScheduleDetail id={selectedScheduleId} onBack={()=>setView('schedules')} onBook={()=>goBooking(selectedScheduleId)} />
@@ -58,7 +60,18 @@ const AppContent: React.FC = () => {
         {view === 'business' && <BusinessDashboard />}
         {view === 'login' && <Login />}
         {view === 'register' && <Register />}
-      </div>
+      </main>
+
+      <footer className="bg-white border-t">
+        <div className="mx-auto max-w-5xl p-4 text-xs text-gray-600 flex items-center justify-between">
+          <div>© {new Date().getFullYear()} Travel Website</div>
+          <div className="space-x-3">
+            <span>Privacy</span>
+            <span>Terms</span>
+            <span>Support</span>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
