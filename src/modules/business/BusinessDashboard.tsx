@@ -26,6 +26,7 @@ export const BusinessDashboard: React.FC = () => {
     status: 'active',
     maxSeats: 40
   })
+  const [routes, setRoutes] = React.useState<any[]>([])
 
   const authHeaders = { Authorization: `Bearer ${accessToken}` }
 
@@ -158,6 +159,19 @@ export const BusinessDashboard: React.FC = () => {
     if (activeTab === 'stats') loadStats()
     if (activeTab === 'profile') loadProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab])
+
+  // Load routes for dropdown when schedules tab is active or creating/editing
+  React.useEffect(() => {
+    const loadRoutes = async () => {
+      try {
+        const res = await axios.get(`${apiBase}/api/routes`)
+        setRoutes(res.data.data || [])
+      } catch {}
+    }
+    if (activeTab === 'schedules') {
+      loadRoutes()
+    }
   }, [activeTab])
 
   const getStatusColor = (status: string) => {
@@ -385,8 +399,13 @@ const ScheduleForm: React.FC<{
       <h3 className="text-lg font-semibold">Schedule</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm mb-1">Route ID</label>
-          <input className="w-full border rounded px-3 py-2" value={form.routeId} onChange={e=>setForm((prev: any)=>({ ...prev, routeId: e.target.value }))} placeholder="Mongo ObjectId of route" />
+          <label className="block text-sm mb-1">Route</label>
+          <select className="w-full border rounded px-3 py-2" value={form.routeId} onChange={e=>setForm((prev: any)=>({ ...prev, routeId: e.target.value }))}>
+            <option value="">Select route</option>
+            {routes.map((r: any) => (
+              <option key={r._id} value={r._id}>{r.from} → {r.to}</option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm mb-1">Vehicle Type</label>
