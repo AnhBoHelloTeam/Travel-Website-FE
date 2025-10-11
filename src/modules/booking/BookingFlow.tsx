@@ -13,7 +13,10 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
   const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
   const [schedule, setSchedule] = React.useState<any>(null)
+  const [routeStops, setRouteStops] = React.useState<any[]>([])
   const [selectedSeat, setSelectedSeat] = React.useState<string | null>(null)
+  const [selectedPickup, setSelectedPickup] = React.useState<string>('')
+  const [selectedDropoff, setSelectedDropoff] = React.useState<string>('')
   const [passenger, setPassenger] = React.useState({
     firstName: '', lastName: '', phone: '', email: ''
   })
@@ -24,6 +27,12 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
     try {
       const res = await axios.get(`${apiBase}/api/schedules/${scheduleId}`)
       setSchedule(res.data.data)
+      
+      // Load route stops if routeId exists
+      if (res.data.data?.routeId) {
+        const stopsRes = await axios.get(`${apiBase}/api/routes/${res.data.data.routeId}/stops`)
+        setRouteStops(stopsRes.data.data || [])
+      }
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to load schedule')
     }
@@ -35,7 +44,20 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
   }, [scheduleId])
 
   const createTicket = async () => {
-    if (!selectedSeat) return
+    if (!selectedSeat || !selectedPickup || !selectedDropoff) {
+      setError('Please select seat, pickup and dropoff points')
+      return
+    }
+    
+    // Find selected pickup and dropoff points
+    const pickupPoint = routeStops.find(stop => stop._id === selectedPickup)
+    const dropoffPoint = routeStops.find(stop => stop._id === selectedDropoff)
+    
+    if (!pickupPoint || !dropoffPoint) {
+      setError('Invalid pickup or dropoff point selected')
+      return
+    }
+    
     setLoading(true)
     setError('')
     try {
@@ -43,7 +65,17 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
         scheduleId,
         seatNumber: selectedSeat,
         passengerInfo: passenger,
-        paymentInfo: { method: 'momo', amount: schedule?.price || 0 }
+        paymentInfo: { method: 'momo', amount: schedule?.price || 0 },
+        pickupPoint: {
+          name: pickupPoint.name,
+          address: pickupPoint.address,
+          estimatedTime: pickupPoint.estimatedTime
+        },
+        dropoffPoint: {
+          name: dropoffPoint.name,
+          address: dropoffPoint.address,
+          estimatedTime: dropoffPoint.estimatedTime
+        }
       }, {
         headers: { Authorization: `Bearer ${accessToken}` }
       })
@@ -56,6 +88,14 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
   }
 
   if (!schedule) return <div>Loading...</div>
+
+  // Determine seat grid columns from seatLayout, e.g., '2-2' => 4 columns, '2-1' => 3
+  const seatColumns = React.useMemo(() => {
+    const layout = String(schedule.seatLayout || '2-2')
+    const parts = layout.split('-').map((p: string) => parseInt(p, 10)).filter((n: number) => !isNaN(n))
+    const totalCols = parts.length ? parts.reduce((a: number, b: number) => a + b, 0) : 4
+    return Math.min(Math.max(totalCols, 2), 8)
+  }, [schedule?.seatLayout])
 
   return (
     <div className="space-y-4 bg-white border rounded p-4">
@@ -77,7 +117,7 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
 
         <div>
           <h3 className="font-medium mb-2">Select Seat</h3>
-          <div className="grid grid-cols-4 gap-2">
+          <div className={`grid gap-2`} style={{ gridTemplateColumns: `repeat(${seatColumns}, minmax(0, 1fr))` }}>
             {(schedule.seats || []).map((seat: any) => (
               <button
                 key={seat.seatNumber}
@@ -98,6 +138,43 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
           {selectedSeat && <div className="mt-2 text-sm">Selected: {selectedSeat}</div>}
         </div>
       </div>
+
+      {/* Pickup/Dropoff Points Selection */}
+      {routeStops.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h3 className="font-medium mb-2">Pickup Point</h3>
+            <select
+              value={selectedPickup}
+              onChange={e => setSelectedPickup(e.target.value)}
+              className="w-full border rounded px-3 py-2"
+            >
+              <option value="">Select pickup point</option>
+              {routeStops.map(stop => (
+                <option key={stop._id} value={stop._id}>
+                  {stop.name} - {stop.address} ({stop.estimatedTime}min)
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <h3 className="font-medium mb-2">Dropoff Point</h3>
+            <select
+              value={selectedDropoff}
+              onChange={e => setSelectedDropoff(e.target.value)}
+              className="w-full border rounded px-3 py-2"
+            >
+              <option value="">Select dropoff point</option>
+              {routeStops.map(stop => (
+                <option key={stop._id} value={stop._id}>
+                  {stop.name} - {stop.address} ({stop.estimatedTime}min)
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
       <div>
         <h3 className="font-medium mb-2">Passenger Info</h3>
