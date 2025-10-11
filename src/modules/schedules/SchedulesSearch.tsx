@@ -107,37 +107,37 @@ export const SchedulesSearch: React.FC<Props> = ({ onSelect }) => {
         {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
       </div>
 
-      <div className="bg-white border rounded">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left border-b">
-              <th className="p-3">Departure</th>
-              <th className="p-3">Arrival</th>
-              <th className="p-3">Vehicle</th>
-              <th className="p-3">Price</th>
-              <th className="p-3"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && (
-              <tr><td className="p-3" colSpan={5}>Loading...</td></tr>
-            )}
-            {!loading && items.length === 0 && (
-              <tr><td className="p-3" colSpan={5}>No schedules</td></tr>
-            )}
-            {!loading && items.map(item => (
-              <tr key={item._id} className="border-b">
-                <td className="p-3">{new Date(item.departureTime).toLocaleString()}</td>
-                <td className="p-3">{new Date(item.arrivalTime).toLocaleString()}</td>
-                <td className="p-3 capitalize">{item.vehicleType}</td>
-                <td className="p-3">{item.price.toLocaleString()} đ</td>
-                <td className="p-3 text-right">
-                  <button onClick={()=>onSelect(item._id)} className="px-2 py-1 border rounded">Detail</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="grid gap-4 md:grid-cols-2">
+        {loading && (
+          <div className="bg-white border rounded p-4">Loading...</div>
+        )}
+        {!loading && items.length === 0 && (
+          <div className="bg-white border rounded p-6 text-center text-gray-500">No schedules</div>
+        )}
+        {!loading && items.map((item: any) => (
+          <div key={item._id} className="bg-white border rounded p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex-1">
+              <div className="text-sm text-gray-500">Departure</div>
+              <div className="font-semibold">{new Date(item.departureTime).toLocaleString()}</div>
+              <div className="mt-2 text-sm text-gray-500">Arrival</div>
+              <div className="font-semibold">{new Date(item.arrivalTime).toLocaleString()}</div>
+            </div>
+            <div className="flex-1">
+              <div className="text-sm text-gray-500">Vehicle</div>
+              <div className="font-semibold capitalize">{item.vehicleCategory || item.vehicleType}</div>
+              {typeof item.capacity === 'number' && (
+                <div className="text-sm text-gray-600">Capacity: {item.capacity}</div>
+              )}
+            </div>
+            <div className="flex-1">
+              <div className="text-sm text-gray-500">Price</div>
+              <div className="font-semibold">{item.price?.toLocaleString()} đ</div>
+            </div>
+            <div className="text-right">
+              <button onClick={()=>onSelect(item._id)} className="px-3 py-2 bg-blue-600 text-white rounded">Detail</button>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
