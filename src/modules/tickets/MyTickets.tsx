@@ -108,7 +108,7 @@ export const MyTickets: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
             <div>
               <h3 className="font-medium">Passenger Info</h3>
               <div className="text-sm text-gray-600">
@@ -117,6 +117,21 @@ export const MyTickets: React.FC = () => {
                 <div>{ticket.passengerInfo?.email}</div>
               </div>
             </div>
+            
+            {/* NEW: Pickup/Dropoff Points */}
+            {ticket.pickupPoint && ticket.dropoffPoint && (
+              <div>
+                <h3 className="font-medium">Pickup & Dropoff</h3>
+                <div className="text-sm text-gray-600">
+                  <div><b>From:</b> {ticket.pickupPoint.name}</div>
+                  <div className="text-xs">{ticket.pickupPoint.address}</div>
+                  <div className="text-xs">~{ticket.pickupPoint.estimatedTime}min from departure</div>
+                  <div className="mt-1"><b>To:</b> {ticket.dropoffPoint.name}</div>
+                  <div className="text-xs">{ticket.dropoffPoint.address}</div>
+                  <div className="text-xs">~{ticket.dropoffPoint.estimatedTime}min from departure</div>
+                </div>
+              </div>
+            )}
             <div>
               <h3 className="font-medium">Payment Info</h3>
               <div className="text-sm text-gray-600">
