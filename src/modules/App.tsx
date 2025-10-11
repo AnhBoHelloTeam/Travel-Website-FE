@@ -13,7 +13,7 @@ import { BusinessDashboard } from './business/BusinessDashboard'
 const AppContent: React.FC = () => {
   const [view, setView] = React.useState<'home' | 'login' | 'register' | 'schedules' | 'scheduleDetail' | 'booking' | 'myTickets' | 'admin' | 'business'>('home')
   const [selectedScheduleId, setSelectedScheduleId] = React.useState<string | null>(null)
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
 
   const goDetail = (id: string) => {
     setSelectedScheduleId(id)
@@ -40,8 +40,15 @@ const AppContent: React.FC = () => {
             {user?.role === 'business' && (
               <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>setView('business')}>Business</button>
             )}
-            <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>setView('login')}>Login</button>
-            <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>setView('register')}>Register</button>
+            {!user && (
+              <>
+                <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>setView('login')}>Login</button>
+                <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>setView('register')}>Register</button>
+              </>
+            )}
+            {user && (
+              <button className="px-2 py-1 rounded hover:bg-gray-100" onClick={()=>{ logout(); setView('home') }}>Logout</button>
+            )}
           </nav>
         </div>
       </header>
@@ -58,8 +65,8 @@ const AppContent: React.FC = () => {
         {view === 'myTickets' && <MyTickets />}
         {view === 'admin' && <AdminDashboard />}
         {view === 'business' && <BusinessDashboard />}
-        {view === 'login' && <Login />}
-        {view === 'register' && <Register />}
+        {view === 'login' && !user && <Login />}
+        {view === 'register' && !user && <Register />}
       </main>
 
       <footer className="bg-white border-t">
