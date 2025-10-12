@@ -1,5 +1,6 @@
 import React from 'react'
 import axios from 'axios'
+import { SeatMap } from '../booking/SeatMap'
 
 export const ScheduleDetail: React.FC<{ id: string, onBack: () => void, onBook?: () => void }> = ({ id, onBack, onBook }) => {
   const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
@@ -40,13 +41,14 @@ export const ScheduleDetail: React.FC<{ id: string, onBack: () => void, onBook?:
           <div><b>Vehicle:</b> {data.vehicleType}</div>
           <div><b>Price:</b> {data.price?.toLocaleString()} đ</div>
           <div>
-            <b>Seats:</b>
-            <div className="grid grid-cols-4 gap-2 mt-2">
-              {(data.seats || []).map((s: any) => (
-                <div key={s.seatNumber} className={`border rounded p-2 text-center ${s.isAvailable ? 'bg-green-50' : 'bg-gray-100'}`}>
-                  {s.seatNumber}
-                </div>
-              ))}
+            <b>Seat Map:</b>
+            <div className="mt-2">
+              <SeatMap
+                seats={data.seats || []}
+                seatLayout={data.seatLayout || '2-2'}
+                selectedSeat={null}
+                onSeatSelect={() => {}} // Read-only in detail view
+              />
             </div>
           </div>
           <div className="mt-4">
