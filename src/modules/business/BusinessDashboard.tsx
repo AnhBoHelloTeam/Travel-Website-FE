@@ -1,6 +1,7 @@
 import React from 'react'
 import axios from 'axios'
 import { useAuth } from '../auth/AuthContext'
+import { SeatMap } from '../booking/SeatMap'
 
 export const BusinessDashboard: React.FC = () => {
   const { accessToken } = useAuth()
@@ -271,6 +272,20 @@ export const BusinessDashboard: React.FC = () => {
               <div className="text-sm text-gray-600 mb-3">
                 <div>Price: {formatCurrency(schedule.price)}</div>
                 <div>Available seats: {schedule.seats.filter((s: any) => s.isAvailable).length}/{schedule.maxSeats}</div>
+                <div>Layout: {schedule.seatLayout || '2-2'}</div>
+              </div>
+              
+              {/* Seat Map Preview */}
+              <div className="mb-3">
+                <div className="text-sm font-medium mb-2">Seat Map:</div>
+                <div className="scale-75 origin-top-left">
+                  <SeatMap
+                    seats={schedule.seats || []}
+                    seatLayout={schedule.seatLayout || '2-2'}
+                    selectedSeat={null}
+                    onSeatSelect={() => {}} // Read-only
+                  />
+                </div>
               </div>
               <div className="flex justify-end space-x-2">
                 <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm" onClick={()=>startEdit(schedule)}>Edit</button>
