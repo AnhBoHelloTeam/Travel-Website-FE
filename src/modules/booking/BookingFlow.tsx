@@ -1,6 +1,7 @@
 import React from 'react'
 import axios from 'axios'
 import { useAuth } from '../auth/AuthContext'
+import { SeatMap } from './SeatMap'
 
 type Props = {
   scheduleId: string
@@ -89,14 +90,6 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
 
   if (!schedule) return <div>Loading...</div>
 
-  // Determine seat grid columns from seatLayout, e.g., '2-2' => 4 columns, '2-1' => 3
-  const seatColumns = React.useMemo(() => {
-    const layout = String(schedule.seatLayout || '2-2')
-    const parts = layout.split('-').map((p: string) => parseInt(p, 10)).filter((n: number) => !isNaN(n))
-    const totalCols = parts.length ? parts.reduce((a: number, b: number) => a + b, 0) : 4
-    return Math.min(Math.max(totalCols, 2), 8)
-  }, [schedule?.seatLayout])
-
   return (
     <div className="space-y-4 bg-white border rounded p-4">
       <div className="flex items-center justify-between">
@@ -117,25 +110,12 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
 
         <div>
           <h3 className="font-medium mb-2">Select Seat</h3>
-          <div className={`grid gap-2`} style={{ gridTemplateColumns: `repeat(${seatColumns}, minmax(0, 1fr))` }}>
-            {(schedule.seats || []).map((seat: any) => (
-              <button
-                key={seat.seatNumber}
-                onClick={() => seat.isAvailable ? setSelectedSeat(seat.seatNumber) : null}
-                disabled={!seat.isAvailable}
-                className={`border rounded p-2 text-center ${
-                  selectedSeat === seat.seatNumber
-                    ? 'bg-blue-200 border-blue-500'
-                    : seat.isAvailable
-                    ? 'bg-green-50 hover:bg-green-100'
-                    : 'bg-gray-100 cursor-not-allowed'
-                }`}
-              >
-                {seat.seatNumber}
-              </button>
-            ))}
-          </div>
-          {selectedSeat && <div className="mt-2 text-sm">Selected: {selectedSeat}</div>}
+          <SeatMap
+            seats={schedule.seats || []}
+            seatLayout={schedule.seatLayout || '2-2'}
+            selectedSeat={selectedSeat}
+            onSeatSelect={setSelectedSeat}
+          />
         </div>
       </div>
 
