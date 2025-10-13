@@ -2,6 +2,7 @@ import React from 'react'
 import axios from 'axios'
 import { useAuth } from '../auth/AuthContext'
 import { SeatMap } from './SeatMap'
+import { RouteMap } from '../schedules/RouteMap'
 
 type Props = {
   scheduleId: string
@@ -236,6 +237,11 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Route Map */}
+          <div className="mt-4">
+            <RouteMap stops={routeStops} departureTime={schedule.departureTime} />
           </div>
         </div>
       )}
