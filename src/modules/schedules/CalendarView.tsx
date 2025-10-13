@@ -11,11 +11,11 @@ export const CalendarView: React.FC<Props> = ({ onDateSelect, selectedDate }) =>
   const [availableDates, setAvailableDates] = React.useState<string[]>([])
   const [loading, setLoading] = React.useState(false)
 
-  // Generate next 30 days
+  // Generate next 7 days (reduce burst requests)
   const generateDates = () => {
     const dates = []
     const today = new Date()
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 7; i++) {
       const date = new Date(today)
       date.setDate(today.getDate() + i)
       dates.push(date.toISOString().split('T')[0])
@@ -25,16 +25,17 @@ export const CalendarView: React.FC<Props> = ({ onDateSelect, selectedDate }) =>
 
   const dates = generateDates()
 
-  // Check which dates have available schedules
+  // Check which dates have available schedules (throttle with small batch)
   const checkAvailableDates = async () => {
     setLoading(true)
     try {
-      const promises = dates.map(date => 
-        axios.get(`${apiBase}/api/schedules`, { 
-          params: { date, status: 'active', limit: 1 } 
-        })
-      )
-      const results = await Promise.all(promises)
+      const results: any[] = []
+      for (const date of dates) {
+        // Sequential small requests to avoid rate limiters
+        const res = await axios.get(`${apiBase}/api/schedules`, { params: { date, status: 'active', limit: 1 } })
+        results.push(res)
+        await new Promise(r => setTimeout(r, 120)) // small delay between requests
+      }
       
       const available = results
         .map((result, index) => ({ date: dates[index], hasSchedules: result.data.data.length > 0 }))
