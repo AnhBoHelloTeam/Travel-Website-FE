@@ -268,6 +268,7 @@ export const BusinessDashboard: React.FC = () => {
               submitLabel="Create"
               routes={routes}
               categoryOptions={categoryOptions}
+              routeStops={routeStops}
             />
           )}
 
@@ -284,6 +285,7 @@ export const BusinessDashboard: React.FC = () => {
               submitLabel="Update"
               routes={routes}
               categoryOptions={categoryOptions}
+              routeStops={routeStops}
             />
           )}
 
@@ -476,7 +478,8 @@ const ScheduleForm: React.FC<{
   onCategoryChange?: (cat: string) => void
   routes: any[]
   categoryOptions: Array<{ key: string; label: string; hint: string; capacity: number; layout: string }>
-}> = ({ form, setForm, onSubmit, onCancel, submitLabel, onCategoryChange, routes, categoryOptions }) => {
+  routeStops: any[]
+}> = ({ form, setForm, onSubmit, onCancel, submitLabel, onCategoryChange, routes, categoryOptions, routeStops }) => {
   const generateSeats = (capacity: number, seatLayout: string) => {
     const [left, right] = (seatLayout || '2-2').split('-').map(n => parseInt(n || '2', 10))
     const perRow = left + right
