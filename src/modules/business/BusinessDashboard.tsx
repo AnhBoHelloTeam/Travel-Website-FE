@@ -31,6 +31,7 @@ export const BusinessDashboard: React.FC = () => {
     maxSeats: 40
   })
   const [routes, setRoutes] = React.useState<any[]>([])
+  const [routeStops, setRouteStops] = React.useState<any[]>([])
 
   const authHeaders = { Authorization: `Bearer ${accessToken}` }
 
@@ -92,10 +93,8 @@ export const BusinessDashboard: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      const payload = {
-        ...scheduleForm,
-        // optional: initial seats array can be omitted; backend validates required fields
-      }
+      const { routeId, departureTime, arrivalTime, price, vehicleType, vehicleCategory, capacity, seatLayout, status, maxSeats } = scheduleForm
+      const payload = { routeId, departureTime, arrivalTime, price, vehicleType, vehicleCategory, capacity, seatLayout, status, maxSeats }
       await axios.post(`${apiBase}/api/schedules`, payload, { headers: authHeaders })
       setCreating(false)
       setScheduleForm({ routeId: '', departureTime: '', arrivalTime: '', price: 0, vehicleType: 'sleeping', vehicleCategory: 'sitting', capacity: 40, seatLayout: '2-2', status: 'active', maxSeats: 40 })
@@ -134,9 +133,8 @@ export const BusinessDashboard: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      const payload = {
-        ...scheduleForm,
-      }
+      const { routeId, departureTime, arrivalTime, price, vehicleType, vehicleCategory, capacity, seatLayout, status, maxSeats } = scheduleForm
+      const payload = { routeId, departureTime, arrivalTime, price, vehicleType, vehicleCategory, capacity, seatLayout, status, maxSeats }
       await axios.put(`${apiBase}/api/schedules/${editingId}`, payload, { headers: authHeaders })
       cancelEdit()
       await loadSchedules()
@@ -180,6 +178,20 @@ export const BusinessDashboard: React.FC = () => {
       loadRoutes()
     }
   }, [activeTab])
+
+  // Load stops when selected route changes (for UX preview only)
+  React.useEffect(() => {
+    const loadStops = async () => {
+      if (!scheduleForm.routeId) { setRouteStops([]); return }
+      try {
+        const res = await axios.get(`${apiBase}/api/routes/${scheduleForm.routeId}/stops`)
+        setRouteStops(res.data.data?.stops || [])
+      } catch {
+        setRouteStops([])
+      }
+    }
+    loadStops()
+  }, [scheduleForm.routeId])
 
   // Suggest defaults for capacity/layout when vehicleCategory changes
   const applyVehicleDefaults = (category: string) => {
@@ -303,6 +315,22 @@ export const BusinessDashboard: React.FC = () => {
                 </div>
               </div>
               <div className="flex justify-end space-x-2">
+                <button className="px-3 py-1 bg-gray-200 text-gray-800 rounded text-sm" onClick={()=>{
+                  setCreating(true)
+                  setEditingId(null)
+                  setScheduleForm({
+                    routeId: schedule.routeId,
+                    departureTime: new Date(schedule.departureTime).toISOString().slice(0,16),
+                    arrivalTime: new Date(schedule.arrivalTime).toISOString().slice(0,16),
+                    price: schedule.price,
+                    vehicleType: schedule.vehicleType,
+                    vehicleCategory: schedule.vehicleCategory || 'sitting',
+                    capacity: schedule.capacity || schedule.maxSeats || 40,
+                    seatLayout: schedule.seatLayout || '2-2',
+                    status: schedule.status,
+                    maxSeats: schedule.maxSeats || schedule.capacity || 40
+                  })
+                }}>Duplicate</button>
                 <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm" onClick={()=>startEdit(schedule)}>Edit</button>
                 <button className="px-3 py-1 bg-red-600 text-white rounded text-sm" onClick={()=>deleteSchedule(schedule._id)}>Delete</button>
               </div>
@@ -504,6 +532,21 @@ const ScheduleForm: React.FC<{
               <option key={r._id} value={r._id}>{r.from} → {r.to}</option>
             ))}
           </select>
+        </div>
+        {/* Route stops preview (read-only for guidance) */}
+        <div>
+          <label className="block text-sm mb-1">Route Stops (preview)</label>
+          <div className="border rounded p-2 max-h-28 overflow-auto text-xs bg-gray-50">
+            {routeStops && routeStops.length > 0 ? (
+              <ul className="list-disc list-inside space-y-1">
+                {routeStops.map((s: any) => (
+                  <li key={s._id || s.name}>{s.name} - {s.address} ({s.estimatedTime}m)</li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-gray-500">Select a route to see stops</div>
+            )}
+          </div>
         </div>
         <div>
           <label className="block text-sm mb-1">Vehicle Type</label>
