@@ -98,7 +98,7 @@ export const BusinessDashboard: React.FC = () => {
       }
       await axios.post(`${apiBase}/api/schedules`, payload, { headers: authHeaders })
       setCreating(false)
-      setScheduleForm({ routeId: '', departureTime: '', arrivalTime: '', price: 0, vehicleType: 'sleeping', status: 'active', maxSeats: 40 })
+      setScheduleForm({ routeId: '', departureTime: '', arrivalTime: '', price: 0, vehicleType: 'sleeping', vehicleCategory: 'sitting', capacity: 40, seatLayout: '2-2', status: 'active', maxSeats: 40 })
       await loadSchedules()
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to create schedule')
@@ -116,14 +116,17 @@ export const BusinessDashboard: React.FC = () => {
       arrivalTime: new Date(s.arrivalTime).toISOString().slice(0,16),
       price: s.price,
       vehicleType: s.vehicleType,
+      vehicleCategory: s.vehicleCategory || 'sitting',
+      capacity: s.capacity || s.maxSeats || 40,
+      seatLayout: s.seatLayout || '2-2',
       status: s.status,
-      maxSeats: s.maxSeats || 40
+      maxSeats: s.maxSeats || s.capacity || 40
     })
   }
 
   const cancelEdit = () => {
     setEditingId(null)
-    setScheduleForm({ routeId: '', departureTime: '', arrivalTime: '', price: 0, vehicleType: 'sleeping', status: 'active', maxSeats: 40 })
+    setScheduleForm({ routeId: '', departureTime: '', arrivalTime: '', price: 0, vehicleType: 'sleeping', vehicleCategory: 'sitting', capacity: 40, seatLayout: '2-2', status: 'active', maxSeats: 40 })
   }
 
   const updateSchedule = async () => {
@@ -189,6 +192,14 @@ export const BusinessDashboard: React.FC = () => {
     }
   }
 
+  const categoryOptions: Array<{ key: string; label: string; hint: string; capacity: number; layout: string }> = [
+    { key: 'sitting',   label: 'Ghế ngồi',     hint: '40 chỗ', capacity: 40, layout: '2-2' },
+    { key: 'bus16',     label: 'Xe 16 chỗ',    hint: '2-2',    capacity: 16, layout: '2-2' },
+    { key: 'bus32',     label: 'Xe 32 chỗ',    hint: '2-2',    capacity: 32, layout: '2-2' },
+    { key: 'limousine', label: 'Limousine',    hint: '2-1',    capacity: 12, layout: '2-1' },
+    { key: 'sleeper',   label: 'Giường nằm',   hint: '2-1',    capacity: 40, layout: '2-1' },
+  ]
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'text-green-600 bg-green-50'
@@ -243,6 +254,8 @@ export const BusinessDashboard: React.FC = () => {
                 setScheduleForm((prev: any)=>({ ...prev, vehicleCategory: cat, capacity: d.capacity, seatLayout: d.seatLayout }))
               }}
               submitLabel="Create"
+              routes={routes}
+              categoryOptions={categoryOptions}
             />
           )}
 
@@ -257,6 +270,8 @@ export const BusinessDashboard: React.FC = () => {
                 setScheduleForm((prev: any)=>({ ...prev, vehicleCategory: cat, capacity: d.capacity, seatLayout: d.seatLayout }))
               }}
               submitLabel="Update"
+              routes={routes}
+              categoryOptions={categoryOptions}
             />
           )}
 
@@ -431,10 +446,55 @@ const ScheduleForm: React.FC<{
   onCancel?: () => void
   submitLabel: string
   onCategoryChange?: (cat: string) => void
-}> = ({ form, setForm, onSubmit, onCancel, submitLabel, onCategoryChange }) => {
+  routes: any[]
+  categoryOptions: Array<{ key: string; label: string; hint: string; capacity: number; layout: string }>
+}> = ({ form, setForm, onSubmit, onCancel, submitLabel, onCategoryChange, routes, categoryOptions }) => {
+  const generateSeats = (capacity: number, seatLayout: string) => {
+    const [left, right] = (seatLayout || '2-2').split('-').map(n => parseInt(n || '2', 10))
+    const perRow = left + right
+    const rows = Math.ceil(capacity / perRow)
+    const seats: any[] = []
+    let seatNumber = 1
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < perRow && seatNumber <= capacity; c++) {
+        seats.push({ number: seatNumber, isAvailable: true, seatType: r === 0 ? 'vip' : 'normal' })
+        seatNumber++
+      }
+    }
+    return seats
+  }
+
+  const previewSeats = React.useMemo(() => generateSeats(form.capacity || 0, form.seatLayout || '2-2'), [form.capacity, form.seatLayout])
+
   return (
-    <div className="bg-white border rounded p-4 space-y-3">
+    <div className="bg-white border rounded p-4 space-y-4">
       <h3 className="text-lg font-semibold">Schedule</h3>
+
+      {/* Preset vehicle selector */}
+      <div>
+        <label className="block text-sm mb-2">Chọn loại xe (preset)</label>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+          {categoryOptions.map(opt => {
+            const active = form.vehicleCategory === opt.key
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => {
+                  setForm((prev: any) => ({ ...prev, vehicleCategory: opt.key, capacity: opt.capacity, seatLayout: opt.layout }))
+                  onCategoryChange && onCategoryChange(opt.key)
+                }}
+                className={`text-left border rounded px-3 py-2 ${active ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                title={`${opt.label} - ${opt.hint}`}
+              >
+                <div className="font-medium">{opt.label}</div>
+                <div className="text-xs text-gray-500">{opt.hint} • {opt.capacity} chỗ</div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
           <label className="block text-sm mb-1">Route</label>
@@ -443,19 +503,6 @@ const ScheduleForm: React.FC<{
             {routes.map((r: any) => (
               <option key={r._id} value={r._id}>{r.from} → {r.to}</option>
             ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm mb-1">Vehicle Category</label>
-          <select className="w-full border rounded px-3 py-2" value={form.vehicleCategory} onChange={e=>{
-            setForm((prev: any)=>({ ...prev, vehicleCategory: e.target.value }));
-            onCategoryChange && onCategoryChange(e.target.value)
-          }}>
-            <option value="sitting">Sitting</option>
-            <option value="bus16">Bus 16</option>
-            <option value="bus32">Bus 32</option>
-            <option value="limousine">Limousine</option>
-            <option value="sleeper">Sleeper</option>
           </select>
         </div>
         <div>
@@ -471,7 +518,11 @@ const ScheduleForm: React.FC<{
         </div>
         <div>
           <label className="block text-sm mb-1">Seat Layout</label>
-          <input className="w-full border rounded px-3 py-2" placeholder="e.g. 2-2 or 2-1" value={form.seatLayout} onChange={e=>setForm((prev: any)=>({ ...prev, seatLayout: e.target.value }))} />
+          <select className="w-full border rounded px-3 py-2" value={form.seatLayout} onChange={e=>setForm((prev: any)=>({ ...prev, seatLayout: e.target.value }))}>
+            <option value="2-2">2-2</option>
+            <option value="2-1">2-1</option>
+            <option value="1-1">1-1</option>
+          </select>
         </div>
         <div>
           <label className="block text-sm mb-1">Departure Time</label>
@@ -493,11 +544,16 @@ const ScheduleForm: React.FC<{
             <option value="cancelled">Cancelled</option>
           </select>
         </div>
-        <div>
-          <label className="block text-sm mb-1">Max Seats</label>
-          <input type="number" className="w-full border rounded px-3 py-2" value={form.maxSeats} onChange={e=>setForm((prev: any)=>({ ...prev, maxSeats: Number(e.target.value) }))} />
+      </div>
+
+      {/* Live preview */}
+      <div>
+        <div className="text-sm font-medium mb-2">Seat Map Preview</div>
+        <div className="scale-90 origin-top-left border rounded p-2">
+          <SeatMap seats={previewSeats} seatLayout={form.seatLayout || '2-2'} selectedSeat={null} onSeatSelect={() => {}} />
         </div>
       </div>
+
       <div className="flex justify-end space-x-2">
         {onCancel && (
           <button type="button" onClick={onCancel} className="px-3 py-2 bg-gray-300 text-gray-700 rounded">Cancel</button>
