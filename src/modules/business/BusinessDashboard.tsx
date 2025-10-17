@@ -480,6 +480,31 @@ const ScheduleForm: React.FC<{
   categoryOptions: Array<{ key: string; label: string; hint: string; capacity: number; layout: string }>
   routeStops: any[]
 }> = ({ form, setForm, onSubmit, onCancel, submitLabel, onCategoryChange, routes, categoryOptions, routeStops }) => {
+  const toInputLocal = (d: Date) => {
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const y = d.getFullYear()
+    const m = pad(d.getMonth() + 1)
+    const day = pad(d.getDate())
+    const hh = pad(d.getHours())
+    const mm = pad(d.getMinutes())
+    return `${y}-${m}-${day}T${hh}:${mm}`
+  }
+
+  const addMinutes = (d: Date, mins: number) => {
+    const nd = new Date(d)
+    nd.setMinutes(nd.getMinutes() + mins)
+    return nd
+  }
+
+  const getSelectedRoute = () => routes.find((r: any) => r._id === form.routeId)
+
+  const applyArrivalByDuration = (depStr: string) => {
+    const route = getSelectedRoute()
+    if (!route || !route.duration || !depStr) return
+    const dep = new Date(depStr)
+    const arr = addMinutes(dep, Number(route.duration))
+    setForm((prev: any) => ({ ...prev, arrivalTime: toInputLocal(arr) }))
+  }
   const generateSeats = (capacity: number, seatLayout: string) => {
     const [left, right] = (seatLayout || '2-2').split('-').map(n => parseInt(n || '2', 10))
     const perRow = left + right
@@ -572,7 +597,28 @@ const ScheduleForm: React.FC<{
         </div>
         <div>
           <label className="block text-sm mb-1">Departure Time</label>
-          <input type="datetime-local" className="w-full border rounded px-3 py-2" value={form.departureTime} onChange={e=>setForm((prev: any)=>({ ...prev, departureTime: e.target.value }))} />
+          <input type="datetime-local" className="w-full border rounded px-3 py-2" value={form.departureTime} onChange={e=>{ setForm((prev: any)=>({ ...prev, departureTime: e.target.value })); applyArrivalByDuration(e.target.value) }} />
+          <div className="flex flex-wrap gap-2 mt-2 text-xs">
+            {[
+              { label: 'Sáng 07:30', h: 7, m: 30 },
+              { label: 'Trưa 12:30', h: 12, m: 30 },
+              { label: 'Chiều 17:30', h: 17, m: 30 },
+              { label: 'Tối 21:00', h: 21, m: 0 },
+            ].map(p => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={()=>{
+                  const base = form.departureTime ? new Date(form.departureTime) : new Date()
+                  base.setHours(p.h, p.m, 0, 0)
+                  const depStr = toInputLocal(base)
+                  setForm((prev: any)=>({ ...prev, departureTime: depStr }))
+                  applyArrivalByDuration(depStr)
+                }}
+                className="px-2 py-1 border rounded hover:bg-gray-50"
+              >{p.label}</button>
+            ))}
+          </div>
         </div>
         <div>
           <label className="block text-sm mb-1">Arrival Time</label>
@@ -604,7 +650,11 @@ const ScheduleForm: React.FC<{
         {onCancel && (
           <button type="button" onClick={onCancel} className="px-3 py-2 bg-gray-300 text-gray-700 rounded">Cancel</button>
         )}
-        <button onClick={onSubmit} className="px-3 py-2 bg-green-600 text-white rounded">{submitLabel}</button>
+        <button
+          onClick={onSubmit}
+          disabled={!form.routeId || !form.departureTime || !form.arrivalTime || !form.price || form.price <= 0}
+          className={`px-3 py-2 rounded text-white ${(!form.routeId || !form.departureTime || !form.arrivalTime || !form.price || form.price <= 0) ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-600'}`}
+        >{submitLabel}</button>
       </div>
     </div>
   )
