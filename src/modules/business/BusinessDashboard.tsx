@@ -457,7 +457,7 @@ const ScheduleForm: React.FC<{
     let seatNumber = 1
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < perRow && seatNumber <= capacity; c++) {
-        seats.push({ number: seatNumber, isAvailable: true, seatType: r === 0 ? 'vip' : 'normal' })
+        seats.push({ seatNumber: String(seatNumber), isAvailable: true, seatType: r === 0 ? 'vip' : 'normal' })
         seatNumber++
       }
     }

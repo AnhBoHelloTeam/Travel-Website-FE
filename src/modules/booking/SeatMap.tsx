@@ -28,7 +28,8 @@ export const SeatMap: React.FC<Props> = ({ seats, seatLayout, selectedSeat, onSe
     
     seats.forEach(seat => {
       // Extract row number from seat number (e.g., "1A" -> row "1", "12B" -> row "12")
-      const rowMatch = seat.seatNumber.match(/^(\d+)/)
+      const seatId = (seat.seatNumber ?? '').toString()
+      const rowMatch = seatId.match(/^(\d+)/)
       const row = rowMatch ? rowMatch[1] : '1'
       
       if (!rows[row]) rows[row] = []
