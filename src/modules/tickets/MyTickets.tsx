@@ -69,109 +69,204 @@ export const MyTickets: React.FC = () => {
     }
   }
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending': return '⏳'
+      case 'confirmed': return '✅'
+      case 'cancelled': return '❌'
+      default: return '📋'
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending': return 'Chờ thanh toán'
+      case 'confirmed': return 'Đã xác nhận'
+      case 'cancelled': return 'Đã hủy'
+      default: return status
+    }
+  }
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">My Tickets</h2>
-        <div className="flex items-center space-x-2">
-          <select value={filter} onChange={e => setFilter(e.target.value)} className="border rounded px-3 py-2">
-            <option value="">All</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-          <button onClick={loadTickets} className="px-3 py-2 bg-blue-600 text-white rounded">Refresh</button>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">🎫 Vé của tôi</h1>
+            <p className="text-blue-100">Quản lý và theo dõi tất cả vé đã đặt</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <select 
+              value={filter} 
+              onChange={e => setFilter(e.target.value)} 
+              className="border-0 rounded-lg px-4 py-2 text-gray-900 focus:ring-2 focus:ring-yellow-400"
+            >
+              <option value="">Tất cả vé</option>
+              <option value="pending">Chờ thanh toán</option>
+              <option value="confirmed">Đã xác nhận</option>
+              <option value="cancelled">Đã hủy</option>
+            </select>
+            <button 
+              onClick={loadTickets} 
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+            >
+              🔄 Làm mới
+            </button>
+          </div>
         </div>
       </div>
 
-      {error && <div className="text-red-600 text-sm">{error}</div>}
-
-      {loading && <div>Loading...</div>}
-
-      {!loading && tickets.length === 0 && (
-        <div className="text-center py-8 text-gray-500">No tickets found</div>
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-red-600">
+            <span>⚠️</span>
+            <span>{error}</span>
+          </div>
+        </div>
       )}
 
-      {!loading && tickets.map(ticket => (
-        <div key={ticket._id} className="bg-white border rounded p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center space-x-3">
-              <span className={`px-2 py-1 rounded text-sm font-medium ${getStatusColor(ticket.status)}`}>
-                {ticket.status.toUpperCase()}
-              </span>
-              <span className="text-sm text-gray-600">
-                Seat: {ticket.seatNumber}
-              </span>
-            </div>
-            <div className="text-sm text-gray-600">
-              {new Date(ticket.createdAt).toLocaleString()}
+      {loading && (
+        <div className="bg-white border rounded-xl p-8 text-center">
+          <div className="inline-flex items-center gap-2 text-gray-600">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+            Đang tải vé...
+          </div>
+        </div>
+      )}
+
+      {!loading && tickets.length === 0 && (
+        <div className="bg-white border rounded-xl p-12 text-center">
+          <div className="text-6xl mb-4">🎫</div>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Chưa có vé nào</h3>
+          <p className="text-gray-500">Hãy đặt vé đầu tiên của bạn để bắt đầu hành trình!</p>
+        </div>
+      )}
+
+      {!loading && tickets.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-800">
+              📋 Danh sách vé ({tickets.length} vé)
+            </h3>
+            <div className="text-sm text-gray-500">
+              Sắp xếp theo thời gian đặt vé
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
-            <div>
-              <h3 className="font-medium">Passenger Info</h3>
-              <div className="text-sm text-gray-600">
-                <div>{ticket.passengerInfo?.firstName} {ticket.passengerInfo?.lastName}</div>
-                <div>{ticket.passengerInfo?.phone}</div>
-                <div>{ticket.passengerInfo?.email}</div>
-              </div>
-            </div>
-            
-            {/* NEW: Pickup/Dropoff Points */}
-            {ticket.pickupPoint && ticket.dropoffPoint && (
-              <div>
-                <h3 className="font-medium">Pickup & Dropoff</h3>
-                <div className="text-sm text-gray-600">
-                  <div><b>From:</b> {ticket.pickupPoint.name}</div>
-                  <div className="text-xs">{ticket.pickupPoint.address}</div>
-                  <div className="text-xs">~{ticket.pickupPoint.estimatedTime}min from departure</div>
-                  <div className="mt-1"><b>To:</b> {ticket.dropoffPoint.name}</div>
-                  <div className="text-xs">{ticket.dropoffPoint.address}</div>
-                  <div className="text-xs">~{ticket.dropoffPoint.estimatedTime}min from departure</div>
+          
+          {tickets.map(ticket => (
+            <div key={ticket._id} className="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow">
+              {/* Ticket Header */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">{getStatusIcon(ticket.status)}</span>
+                  <div>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(ticket.status)}`}>
+                      {getStatusText(ticket.status)}
+                    </span>
+                    <div className="text-sm text-gray-500 mt-1">
+                      💺 Ghế {ticket.seatNumber} • Đặt lúc {new Date(ticket.createdAt).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-green-600">
+                    {ticket.paymentInfo?.amount?.toLocaleString()} VNĐ
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    💳 {ticket.paymentInfo?.method?.toUpperCase()}
+                  </div>
                 </div>
               </div>
-            )}
-            <div>
-              <h3 className="font-medium">Payment Info</h3>
-              <div className="text-sm text-gray-600">
-                <div>Method: {ticket.paymentInfo?.method}</div>
-                <div>Amount: {ticket.paymentInfo?.amount?.toLocaleString()} đ</div>
-                {ticket.paymentInfo?.transactionId && (
-                  <div>Transaction: {ticket.paymentInfo.transactionId}</div>
+
+              {/* Ticket Details */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    👤 Thông tin hành khách
+                  </h4>
+                  <div className="text-sm space-y-1">
+                    <div><strong>{ticket.passengerInfo?.firstName} {ticket.passengerInfo?.lastName}</strong></div>
+                    <div>📞 {ticket.passengerInfo?.phone}</div>
+                    <div>📧 {ticket.passengerInfo?.email}</div>
+                  </div>
+                </div>
+                
+                {/* Pickup/Dropoff Points */}
+                {ticket.pickupPoint && ticket.dropoffPoint && (
+                  <div className="bg-green-50 rounded-lg p-4">
+                    <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                      📍 Điểm đón/trả
+                    </h4>
+                    <div className="text-sm space-y-2">
+                      <div>
+                        <div className="font-medium text-green-700">🚌 Điểm đón:</div>
+                        <div>{ticket.pickupPoint.name}</div>
+                        <div className="text-xs text-gray-600">{ticket.pickupPoint.address}</div>
+                        <div className="text-xs text-gray-500">~{ticket.pickupPoint.estimatedTime} phút từ giờ khởi hành</div>
+                      </div>
+                      <div>
+                        <div className="font-medium text-blue-700">🏁 Điểm trả:</div>
+                        <div>{ticket.dropoffPoint.name}</div>
+                        <div className="text-xs text-gray-600">{ticket.dropoffPoint.address}</div>
+                        <div className="text-xs text-gray-500">~{ticket.dropoffPoint.estimatedTime} phút từ giờ khởi hành</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                    💳 Thông tin thanh toán
+                  </h4>
+                  <div className="text-sm space-y-1">
+                    <div>Phương thức: <strong>{ticket.paymentInfo?.method?.toUpperCase()}</strong></div>
+                    <div>Số tiền: <strong>{ticket.paymentInfo?.amount?.toLocaleString()} VNĐ</strong></div>
+                    {ticket.paymentInfo?.transactionId && (
+                      <div className="text-xs text-gray-600">
+                        Mã GD: {ticket.paymentInfo.transactionId}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3 pt-4 border-t">
+                {ticket.status === 'pending' && (
+                  <>
+                    <button
+                      onClick={() => confirmPayment(ticket._id)}
+                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      ✅ Xác nhận thanh toán
+                    </button>
+                    <button
+                      onClick={() => cancelTicket(ticket._id)}
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      ❌ Hủy vé
+                    </button>
+                  </>
+                )}
+                {ticket.status === 'confirmed' && (
+                  <button
+                    onClick={() => cancelTicket(ticket._id)}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    ❌ Hủy vé
+                  </button>
+                )}
+                {ticket.status === 'cancelled' && (
+                  <div className="text-sm text-gray-500 italic">
+                    Vé đã bị hủy
+                  </div>
                 )}
               </div>
             </div>
-          </div>
-
-          <div className="flex justify-end space-x-2">
-            {ticket.status === 'pending' && (
-              <>
-                <button
-                  onClick={() => confirmPayment(ticket._id)}
-                  className="px-3 py-1 bg-green-600 text-white rounded text-sm"
-                >
-                  Confirm Payment
-                </button>
-                <button
-                  onClick={() => cancelTicket(ticket._id)}
-                  className="px-3 py-1 bg-red-600 text-white rounded text-sm"
-                >
-                  Cancel
-                </button>
-              </>
-            )}
-            {ticket.status === 'confirmed' && (
-              <button
-                onClick={() => cancelTicket(ticket._id)}
-                className="px-3 py-1 bg-red-600 text-white rounded text-sm"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   )
 }
