@@ -159,6 +159,20 @@ export const BusinessDashboard: React.FC = () => {
     }
   }
 
+  const toggleStatus = async (s: any) => {
+    setLoading(true)
+    setError('')
+    try {
+      const next = s.status === 'active' ? 'inactive' : 'active'
+      await axios.put(`${apiBase}/api/schedules/${s._id}`, { status: next }, { headers: authHeaders })
+      await loadSchedules()
+    } catch (e: any) {
+      setError(e?.response?.data?.message || 'Failed to update status')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   React.useEffect(() => {
     if (activeTab === 'schedules') loadSchedules()
     if (activeTab === 'stats') loadStats()
