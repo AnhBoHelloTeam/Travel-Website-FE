@@ -203,44 +203,107 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
 
       {/* Pickup/Dropoff Points Selection */}
       {routeStops.length > 0 && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <h3 className="font-semibold text-lg mb-3 text-green-800">📍 Pickup & Dropoff Points</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">🚌 Pickup Point</label>
-              <select
-                value={selectedPickup}
-                onChange={e => setSelectedPickup(e.target.value)}
-                className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-500"
-              >
-                <option value="">Select pickup point</option>
-                {routeStops.map(stop => (
-                  <option key={stop._id} value={stop._id}>
-                    {stop.name} - {stop.address} ({stop.estimatedTime}min)
-                  </option>
-                ))}
-              </select>
-            </div>
+        <div className="bg-gradient-to-br from-green-50 to-blue-50 border border-green-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="font-bold text-xl text-green-800">📍 Chọn điểm đón/trả</h3>
+            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+              {routeStops.length} điểm dừng
+            </span>
+          </div>
+          
+          <div className="bg-white rounded-lg p-4 mb-4">
+            <p className="text-sm text-gray-600 mb-4">
+              💡 <strong>Lưu ý:</strong> Bạn có thể chọn điểm đón/trả bất kỳ dọc tuyến đường. 
+              Xe sẽ dừng tại các điểm này theo lịch trình.
+            </p>
             
-            <div>
-              <label className="block text-sm font-medium mb-2">🏁 Dropoff Point</label>
-              <select
-                value={selectedDropoff}
-                onChange={e => setSelectedDropoff(e.target.value)}
-                className="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-green-500"
-              >
-                <option value="">Select dropoff point</option>
-                {routeStops.map(stop => (
-                  <option key={stop._id} value={stop._id}>
-                    {stop.name} - {stop.address} ({stop.estimatedTime}min)
-                  </option>
-                ))}
-              </select>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold mb-3 text-green-700">
+                  🚌 Điểm đón (Pickup Point)
+                </label>
+                <select
+                  value={selectedPickup}
+                  onChange={e => setSelectedPickup(e.target.value)}
+                  className="w-full border-2 border-green-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+                >
+                  <option value="">-- Chọn điểm đón --</option>
+                  {routeStops.map((stop, index) => (
+                    <option key={stop._id} value={stop._id}>
+                      {index + 1}. {stop.name} - {stop.address} ({stop.estimatedTime} phút)
+                    </option>
+                  ))}
+                </select>
+                {selectedPickup && (
+                  <div className="mt-2 p-2 bg-green-100 rounded text-sm">
+                    ✅ Đã chọn: <strong>{routeStops.find(s => s._id === selectedPickup)?.name}</strong>
+                  </div>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-semibold mb-3 text-blue-700">
+                  🏁 Điểm trả (Dropoff Point)
+                </label>
+                <select
+                  value={selectedDropoff}
+                  onChange={e => setSelectedDropoff(e.target.value)}
+                  className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                >
+                  <option value="">-- Chọn điểm trả --</option>
+                  {routeStops.map((stop, index) => (
+                    <option key={stop._id} value={stop._id}>
+                      {index + 1}. {stop.name} - {stop.address} ({stop.estimatedTime} phút)
+                    </option>
+                  ))}
+                </select>
+                {selectedDropoff && (
+                  <div className="mt-2 p-2 bg-blue-100 rounded text-sm">
+                    ✅ Đã chọn: <strong>{routeStops.find(s => s._id === selectedDropoff)?.name}</strong>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Selection Buttons */}
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <p className="text-sm font-medium text-gray-700 mb-2">⚡ Chọn nhanh:</p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => {
+                    setSelectedPickup(routeStops[0]?._id || '')
+                    setSelectedDropoff(routeStops[routeStops.length - 1]?._id || '')
+                  }}
+                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm transition-colors"
+                >
+                  Điểm đầu → Điểm cuối
+                </button>
+                <button
+                  onClick={() => {
+                    const mid = Math.floor(routeStops.length / 2)
+                    setSelectedPickup(routeStops[0]?._id || '')
+                    setSelectedDropoff(routeStops[mid]?._id || '')
+                  }}
+                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm transition-colors"
+                >
+                  Điểm đầu → Giữa đường
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedPickup('')
+                    setSelectedDropoff('')
+                  }}
+                  className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-sm transition-colors"
+                >
+                  Xóa lựa chọn
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Route Map */}
-          <div className="mt-4">
+          <div className="bg-white rounded-lg p-4">
+            <h4 className="font-semibold mb-3 text-gray-800">🗺️ Sơ đồ tuyến đường</h4>
             <RouteMap stops={routeStops} departureTime={schedule.departureTime} />
           </div>
         </div>
@@ -315,40 +378,67 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
       </div>
 
       {/* Booking Summary */}
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h3 className="font-semibold text-lg mb-3 text-gray-800">📋 Booking Summary</h3>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span>Route:</span>
-            <span className="font-medium">{routeInfo ? `${routeInfo.from} → ${routeInfo.to}` : 'Loading...'}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Departure:</span>
-            <span className="font-medium">{new Date(schedule.departureTime).toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Seat:</span>
-            <span className="font-medium">{selectedSeat || 'Not selected'}</span>
-          </div>
-          {selectedPickup && (
-            <div className="flex justify-between">
-              <span>Pickup:</span>
-              <span className="font-medium">{routeStops.find(s => s._id === selectedPickup)?.name}</span>
+      <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-6 shadow-sm">
+        <h3 className="font-bold text-xl mb-4 text-gray-800 flex items-center gap-2">
+          📋 Tóm tắt đặt vé
+          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+            {selectedSeat ? 'Đã chọn ghế' : 'Chưa chọn ghế'}
+          </span>
+        </h3>
+        
+        <div className="bg-white rounded-lg p-4 space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">📍 Tuyến đường:</span>
+                <span className="font-semibold text-blue-600">{routeInfo ? `${routeInfo.from} → ${routeInfo.to}` : 'Loading...'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">🕐 Giờ khởi hành:</span>
+                <span className="font-medium">{new Date(schedule.departureTime).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">💺 Ghế ngồi:</span>
+                <span className={`font-medium ${selectedSeat ? 'text-green-600' : 'text-red-500'}`}>
+                  {selectedSeat ? `Ghế ${selectedSeat}` : 'Chưa chọn'}
+                </span>
+              </div>
             </div>
-          )}
-          {selectedDropoff && (
-            <div className="flex justify-between">
-              <span>Dropoff:</span>
-              <span className="font-medium">{routeStops.find(s => s._id === selectedDropoff)?.name}</span>
+            
+            <div className="space-y-2">
+              {selectedPickup && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">🚌 Điểm đón:</span>
+                  <span className="font-medium text-green-600">{routeStops.find(s => s._id === selectedPickup)?.name}</span>
+                </div>
+              )}
+              {selectedDropoff && (
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">🏁 Điểm trả:</span>
+                  <span className="font-medium text-blue-600">{routeStops.find(s => s._id === selectedDropoff)?.name}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">💳 Thanh toán:</span>
+                <span className="font-medium capitalize">{paymentMethod}</span>
+              </div>
             </div>
-          )}
-          <div className="flex justify-between">
-            <span>Payment:</span>
-            <span className="font-medium capitalize">{paymentMethod}</span>
           </div>
-          <div className="flex justify-between border-t pt-2">
-            <span className="font-semibold">Total:</span>
-            <span className="font-bold text-lg text-green-600">{schedule.price?.toLocaleString()} đ</span>
+          
+          {/* Price Breakdown */}
+          <div className="border-t pt-3">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">💰 Giá vé:</span>
+              <span className="font-medium">{schedule.price?.toLocaleString()} VNĐ</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">🎫 Phí dịch vụ:</span>
+              <span className="font-medium">0 VNĐ</span>
+            </div>
+            <div className="flex justify-between items-center border-t pt-2 mt-2">
+              <span className="font-bold text-lg">Tổng cộng:</span>
+              <span className="font-bold text-xl text-green-600">{schedule.price?.toLocaleString()} VNĐ</span>
+            </div>
           </div>
         </div>
       </div>
