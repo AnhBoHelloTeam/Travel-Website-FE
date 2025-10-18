@@ -14,6 +14,10 @@ export const BusinessDashboard: React.FC = () => {
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState('')
   const [editingProfile, setEditingProfile] = React.useState(false)
+  
+  // Filter states
+  const [searchText, setSearchText] = React.useState('')
+  const [filterDate, setFilterDate] = React.useState('')
 
   // CRUD states
   const [creating, setCreating] = React.useState(false)
@@ -262,6 +266,28 @@ export const BusinessDashboard: React.FC = () => {
 
       {!loading && activeTab === 'schedules' && (
         <div className="space-y-3">
+          {/* Filters */}
+          <div className="bg-white border rounded p-3 grid grid-cols-1 md:grid-cols-3 gap-2">
+            <input
+              placeholder="Tìm theo route (from/to)"
+              value={searchText}
+              onChange={e=>setSearchText(e.target.value)}
+              className="border rounded px-3 py-2"
+            />
+            <input
+              type="date"
+              value={filterDate}
+              onChange={e=>setFilterDate(e.target.value)}
+              className="border rounded px-3 py-2"
+            />
+            <button 
+              onClick={()=>{setSearchText(''); setFilterDate('')}}
+              className="px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+            >
+              Clear Filters
+            </button>
+          </div>
+
           <div className="flex justify-end">
             {creating ? (
               <button className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm" onClick={()=>{ setCreating(false); setScheduleForm({ routeId: '', departureTime: '', arrivalTime: '', price: 0, vehicleType: 'sleeping', status: 'active', maxSeats: 40 }) }}>Cancel</button>
@@ -303,7 +329,18 @@ export const BusinessDashboard: React.FC = () => {
             />
           )}
 
-          {schedules.map(schedule => (
+          {schedules
+            .filter(s => {
+              if (!searchText) return true
+              const routeStr = `${s.route?.from || ''} ${s.route?.to || ''}`.toLowerCase()
+              return routeStr.includes(searchText.toLowerCase())
+            })
+            .filter(s => {
+              if (!filterDate) return true
+              const d = new Date(s.departureTime).toISOString().split('T')[0]
+              return d === filterDate
+            })
+            .map(schedule => (
             <div key={schedule._id} className="bg-white border rounded p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-3">
@@ -352,8 +389,14 @@ export const BusinessDashboard: React.FC = () => {
               </div>
             </div>
           ))}
-          {schedules.length === 0 && (
-            <div className="text-center py-8 text-gray-500">No schedules found</div>
+          {schedules.filter(s => {
+            const okText = !searchText || (`${s.route?.from || ''} ${s.route?.to || ''}`.toLowerCase().includes(searchText.toLowerCase()))
+            const okDate = !filterDate || (new Date(s.departureTime).toISOString().split('T')[0] === filterDate)
+            return okText && okDate
+          }).length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              {searchText || filterDate ? 'No schedules match your filters' : 'No schedules found'}
+            </div>
           )}
         </div>
       )}
