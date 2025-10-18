@@ -18,6 +18,10 @@ export const BusinessDashboard: React.FC = () => {
   // Filter states
   const [searchText, setSearchText] = React.useState('')
   const [filterDate, setFilterDate] = React.useState('')
+  
+  // Pagination states
+  const [page, setPage] = React.useState(1)
+  const pageSize = 5
 
   // CRUD states
   const [creating, setCreating] = React.useState(false)
@@ -271,17 +275,17 @@ export const BusinessDashboard: React.FC = () => {
             <input
               placeholder="Tìm theo route (from/to)"
               value={searchText}
-              onChange={e=>setSearchText(e.target.value)}
+              onChange={e=>{setSearchText(e.target.value); setPage(1)}}
               className="border rounded px-3 py-2"
             />
             <input
               type="date"
               value={filterDate}
-              onChange={e=>setFilterDate(e.target.value)}
+              onChange={e=>{setFilterDate(e.target.value); setPage(1)}}
               className="border rounded px-3 py-2"
             />
             <button 
-              onClick={()=>{setSearchText(''); setFilterDate('')}}
+              onClick={()=>{setSearchText(''); setFilterDate(''); setPage(1)}}
               className="px-3 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
             >
               Clear Filters
@@ -340,6 +344,7 @@ export const BusinessDashboard: React.FC = () => {
               const d = new Date(s.departureTime).toISOString().split('T')[0]
               return d === filterDate
             })
+            .slice((page-1)*pageSize, page*pageSize)
             .map(schedule => (
             <div key={schedule._id} className="bg-white border rounded p-4">
               <div className="flex items-center justify-between mb-2">
@@ -389,15 +394,47 @@ export const BusinessDashboard: React.FC = () => {
               </div>
             </div>
           ))}
-          {schedules.filter(s => {
-            const okText = !searchText || (`${s.route?.from || ''} ${s.route?.to || ''}`.toLowerCase().includes(searchText.toLowerCase()))
-            const okDate = !filterDate || (new Date(s.departureTime).toISOString().split('T')[0] === filterDate)
-            return okText && okDate
-          }).length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              {searchText || filterDate ? 'No schedules match your filters' : 'No schedules found'}
-            </div>
-          )}
+          {/* Pagination */}
+          {(() => {
+            const filteredSchedules = schedules.filter(s => {
+              const okText = !searchText || (`${s.route?.from || ''} ${s.route?.to || ''}`.toLowerCase().includes(searchText.toLowerCase()))
+              const okDate = !filterDate || (new Date(s.departureTime).toISOString().split('T')[0] === filterDate)
+              return okText && okDate
+            })
+            const totalPages = Math.ceil(filteredSchedules.length / pageSize)
+            
+            return (
+              <>
+                {filteredSchedules.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    {searchText || filterDate ? 'No schedules match your filters' : 'No schedules found'}
+                  </div>
+                )}
+                
+                {filteredSchedules.length > 0 && (
+                  <div className="flex justify-center items-center gap-2 mt-4">
+                    <button 
+                      className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed" 
+                      disabled={page === 1} 
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                    >
+                      Prev
+                    </button>
+                    <span className="text-sm">
+                      Page {page} of {totalPages} ({filteredSchedules.length} schedules)
+                    </span>
+                    <button 
+                      className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed" 
+                      disabled={page >= totalPages} 
+                      onClick={() => setPage(p => p + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            )
+          })()}
         </div>
       )}
 
