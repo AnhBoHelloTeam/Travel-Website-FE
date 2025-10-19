@@ -28,6 +28,21 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState('')
 
+  // Check if user is logged in
+  React.useEffect(() => {
+    if (!user) {
+      setError('Vui lòng đăng nhập để đặt vé')
+    } else {
+      // Pre-fill passenger info with user data
+      setPassenger({
+        firstName: user.profile?.firstName || '',
+        lastName: user.profile?.lastName || '',
+        phone: user.profile?.phone || '',
+        email: user.email || ''
+      })
+    }
+  }, [user])
+
   const loadSchedule = async () => {
     try {
       const res = await axios.get(`${apiBase}/api/schedules/${scheduleId}`)
@@ -135,6 +150,50 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
   }
 
   if (!schedule) return <div>Loading...</div>
+
+  // Show login prompt if user is not authenticated
+  if (!user) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-red-600 to-pink-600 rounded-2xl p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                🔐 Cần đăng nhập
+              </h1>
+              <p className="text-red-100">Vui lòng đăng nhập để đặt vé</p>
+            </div>
+            <button 
+              onClick={onBack} 
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+            >
+              ← Quay lại
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border p-8 text-center">
+          <div className="text-6xl mb-4">🔐</div>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">Cần đăng nhập để đặt vé</h3>
+          <p className="text-gray-500 mb-6">Bạn cần đăng nhập vào tài khoản để có thể đặt vé xe khách</p>
+          <div className="flex gap-3 justify-center">
+            <button 
+              onClick={onBack} 
+              className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors font-medium"
+            >
+              ← Quay lại
+            </button>
+            <button 
+              onClick={() => window.location.href = '#login'}
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all font-semibold"
+            >
+              🔑 Đăng nhập
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4 bg-white border rounded p-4">

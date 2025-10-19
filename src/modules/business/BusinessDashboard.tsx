@@ -4,8 +4,22 @@ import { useAuth } from '../auth/AuthContext'
 import { SeatMap } from '../booking/SeatMap'
 
 export const BusinessDashboard: React.FC = () => {
-  const { accessToken } = useAuth()
-  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
+  const { accessToken, user } = useAuth()
+  const apiBase = import.meta.env.VITE_API_BASE_URL
+
+  // Check if user is business
+  if (!user || user.role !== 'business') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Access Denied</h2>
+          <p className="text-gray-600">You need to be logged in as a business user to access this page.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const apiBaseUrl = apiBase || 'http://localhost:5000'
 
   const [activeTab, setActiveTab] = React.useState<'schedules' | 'stats' | 'profile'>('schedules')
   const [schedules, setSchedules] = React.useState<any[]>([])
@@ -47,7 +61,7 @@ export const BusinessDashboard: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      const res = await axios.get(`${apiBase}/api/business/schedules`, { headers: authHeaders })
+      const res = await axios.get(`${apiBaseUrl}/api/business/schedules`, { headers: authHeaders })
       setSchedules(res.data.data || [])
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to load schedules')
@@ -60,7 +74,7 @@ export const BusinessDashboard: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      const res = await axios.get(`${apiBase}/api/business/stats`, { headers: authHeaders })
+      const res = await axios.get(`${apiBaseUrl}/api/business/stats`, { headers: authHeaders })
       setStats(res.data.data)
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to load stats')
@@ -73,7 +87,7 @@ export const BusinessDashboard: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      const res = await axios.get(`${apiBase}/api/business/profile`, { headers: authHeaders })
+      const res = await axios.get(`${apiBaseUrl}/api/business/profile`, { headers: authHeaders })
       setProfile(res.data.data)
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to load profile')
@@ -86,7 +100,7 @@ export const BusinessDashboard: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      const res = await axios.put(`${apiBase}/api/business/profile`, { profile: profileData }, { headers: authHeaders })
+      const res = await axios.put(`${apiBaseUrl}/api/business/profile`, { profile: profileData }, { headers: authHeaders })
       setProfile(res.data.data)
       setEditingProfile(false)
     } catch (e: any) {
@@ -103,7 +117,7 @@ export const BusinessDashboard: React.FC = () => {
     try {
       const { routeId, departureTime, arrivalTime, price, vehicleType, vehicleCategory, capacity, seatLayout, status, maxSeats } = scheduleForm
       const payload = { routeId, departureTime, arrivalTime, price, vehicleType, vehicleCategory, capacity, seatLayout, status, maxSeats }
-      await axios.post(`${apiBase}/api/schedules`, payload, { headers: authHeaders })
+      await axios.post(`${apiBaseUrl}/api/schedules`, payload, { headers: authHeaders })
       setCreating(false)
       setScheduleForm({ routeId: '', departureTime: '', arrivalTime: '', price: 0, vehicleType: 'sleeping', vehicleCategory: 'sitting', capacity: 40, seatLayout: '2-2', status: 'active', maxSeats: 40 })
       await loadSchedules()
@@ -143,7 +157,7 @@ export const BusinessDashboard: React.FC = () => {
     try {
       const { routeId, departureTime, arrivalTime, price, vehicleType, vehicleCategory, capacity, seatLayout, status, maxSeats } = scheduleForm
       const payload = { routeId, departureTime, arrivalTime, price, vehicleType, vehicleCategory, capacity, seatLayout, status, maxSeats }
-      await axios.put(`${apiBase}/api/schedules/${editingId}`, payload, { headers: authHeaders })
+      await axios.put(`${apiBaseUrl}/api/schedules/${editingId}`, payload, { headers: authHeaders })
       cancelEdit()
       await loadSchedules()
     } catch (e: any) {
@@ -158,7 +172,7 @@ export const BusinessDashboard: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      await axios.delete(`${apiBase}/api/schedules/${id}`, { headers: authHeaders })
+      await axios.delete(`${apiBaseUrl}/api/schedules/${id}`, { headers: authHeaders })
       await loadSchedules()
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to delete schedule')
@@ -172,7 +186,7 @@ export const BusinessDashboard: React.FC = () => {
     setError('')
     try {
       const next = s.status === 'active' ? 'inactive' : 'active'
-      await axios.put(`${apiBase}/api/schedules/${s._id}`, { status: next }, { headers: authHeaders })
+      await axios.put(`${apiBaseUrl}/api/schedules/${s._id}`, { status: next }, { headers: authHeaders })
       await loadSchedules()
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to update status')
@@ -192,7 +206,7 @@ export const BusinessDashboard: React.FC = () => {
   React.useEffect(() => {
     const loadRoutes = async () => {
       try {
-        const res = await axios.get(`${apiBase}/api/routes`)
+        const res = await axios.get(`${apiBaseUrl}/api/routes`)
         setRoutes(res.data.data || [])
       } catch {}
     }
@@ -206,7 +220,7 @@ export const BusinessDashboard: React.FC = () => {
     const loadStops = async () => {
       if (!scheduleForm.routeId) { setRouteStops([]); return }
       try {
-        const res = await axios.get(`${apiBase}/api/routes/${scheduleForm.routeId}/stops`)
+        const res = await axios.get(`${apiBaseUrl}/api/routes/${scheduleForm.routeId}/stops`)
         setRouteStops(res.data.data?.stops || [])
       } catch {
         setRouteStops([])
