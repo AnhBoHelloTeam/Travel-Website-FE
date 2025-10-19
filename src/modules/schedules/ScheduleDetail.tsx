@@ -17,8 +17,14 @@ export const ScheduleDetail: React.FC<{ id: string, onBack: () => void, onBook?:
       const res = await axios.get(`${apiBase}/api/schedules/${id}`)
       setData(res.data.data)
       if (res.data.data?.routeId) {
-        const stopsRes = await axios.get(`${apiBase}/api/routes/${res.data.data.routeId}/stops`)
-        setStops(stopsRes.data.data || [])
+        const routeId = typeof res.data.data.routeId === 'string' 
+          ? res.data.data.routeId 
+          : res.data.data.routeId._id || res.data.data.routeId.id;
+        
+        if (routeId) {
+          const stopsRes = await axios.get(`${apiBase}/api/routes/${routeId}/stops`)
+          setStops(stopsRes.data.data?.stops || [])
+        }
       }
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to load schedule')
@@ -92,7 +98,7 @@ export const ScheduleDetail: React.FC<{ id: string, onBack: () => void, onBook?:
       {data && (
         <div className="space-y-6">
           {/* Schedule Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-center gap-3">
                 <div className="text-3xl">🚀</div>
@@ -133,6 +139,21 @@ export const ScheduleDetail: React.FC<{ id: string, onBack: () => void, onBook?:
                   <p className="text-sm text-gray-600">Giá vé</p>
                   <p className="font-bold text-lg text-green-600">{data.price?.toLocaleString()} VNĐ</p>
                   <p className="text-xs text-gray-500">Giá cơ bản</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className="text-3xl">🏢</div>
+                <div>
+                  <p className="text-sm text-gray-600">Nhà xe</p>
+                  <p className="font-bold text-lg">{data.businessId?.name || 'N/A'}</p>
+                  {data.businessId?.rating && (
+                    <p className="text-xs text-gray-500">
+                      ⭐ {data.businessId.rating.average}/5 ({data.businessId.rating.count} đánh giá)
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
