@@ -256,7 +256,7 @@ export const SchedulesSearch: React.FC<Props> = ({ onSelect }) => {
             {items.map((item: any) => (
               <div key={item._id} className="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                  <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                       <div className="text-sm text-gray-500 mb-1">🕐 Giờ khởi hành</div>
                       <div className="font-bold text-lg">{new Date(item.departureTime).toLocaleString()}</div>
@@ -264,11 +264,21 @@ export const SchedulesSearch: React.FC<Props> = ({ onSelect }) => {
                       <div className="font-semibold">{new Date(item.arrivalTime).toLocaleString()}</div>
                     </div>
                     <div>
+                      <div className="text-sm text-gray-500 mb-1">🗺️ Tuyến đường</div>
+                      <div className="font-semibold text-blue-600">
+                        {item.routeId?.from} → {item.routeId?.to}
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        📏 {item.routeId?.distance}km • ⏱️ {item.routeId?.duration} phút
+                      </div>
+                    </div>
+                    <div>
                       <div className="text-sm text-gray-500 mb-1">🚌 Loại xe</div>
                       <div className="font-semibold capitalize">{item.vehicleCategory || item.vehicleType}</div>
                       {typeof item.capacity === 'number' && (
                         <div className="text-sm text-gray-600 mt-1">💺 {item.capacity} chỗ ngồi</div>
                       )}
+                      <div className="text-sm text-gray-500 mt-1">🏢 {item.businessId?.name || 'N/A'}</div>
                     </div>
                     <div>
                       <div className="text-sm text-gray-500 mb-1">💰 Giá vé</div>

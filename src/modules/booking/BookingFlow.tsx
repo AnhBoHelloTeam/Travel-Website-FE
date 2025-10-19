@@ -50,12 +50,18 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
       
       // Load route info and stops if routeId exists
       if (res.data.data?.routeId) {
-        const [routeRes, stopsRes] = await Promise.all([
-          axios.get(`${apiBase}/api/routes/${res.data.data.routeId}`),
-          axios.get(`${apiBase}/api/routes/${res.data.data.routeId}/stops`)
-        ])
-        setRouteInfo(routeRes.data.data)
-        setRouteStops(stopsRes.data.data || [])
+        const routeId = typeof res.data.data.routeId === 'string' 
+          ? res.data.data.routeId 
+          : res.data.data.routeId._id || res.data.data.routeId.id;
+        
+        if (routeId) {
+          const [routeRes, stopsRes] = await Promise.all([
+            axios.get(`${apiBase}/api/routes/${routeId}`),
+            axios.get(`${apiBase}/api/routes/${routeId}/stops`)
+          ])
+          setRouteInfo(routeRes.data.data)
+          setRouteStops(stopsRes.data.data?.stops || [])
+        }
       }
       
       // Load business info if businessId exists
@@ -114,6 +120,15 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
       
       if (!pickupPoint || !dropoffPoint) {
         setError('Invalid pickup or dropoff point selected')
+        return
+      }
+      
+      // Validate that dropoff point comes after pickup point
+      const pickupIndex = routeStops.findIndex(stop => stop._id === selectedPickup)
+      const dropoffIndex = routeStops.findIndex(stop => stop._id === selectedDropoff)
+      
+      if (dropoffIndex <= pickupIndex) {
+        setError('Điểm trả phải sau điểm đón trên tuyến đường')
         return
       }
     }
@@ -270,6 +285,18 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
             </span>
           </div>
           
+          {routeInfo && (
+            <div className="mb-4 p-3 bg-white rounded-lg border border-green-200">
+              <div className="text-sm text-gray-600 mb-1">Tuyến đường:</div>
+              <div className="font-semibold text-green-800">
+                {routeInfo.from} → {routeInfo.to}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                Quãng đường: {routeInfo.distance}km • Thời gian: {routeInfo.duration} phút
+              </div>
+            </div>
+          )}
+          
           <div className="bg-white rounded-lg p-4 mb-4">
             <p className="text-sm text-gray-600 mb-4">
               💡 <strong>Lưu ý:</strong> Bạn có thể chọn điểm đón/trả bất kỳ dọc tuyến đường. 
@@ -283,7 +310,17 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
                 </label>
                 <select
                   value={selectedPickup}
-                  onChange={e => setSelectedPickup(e.target.value)}
+                  onChange={e => {
+                    setSelectedPickup(e.target.value);
+                    // Reset dropoff if it's before the new pickup point
+                    if (selectedDropoff) {
+                      const pickupIndex = routeStops.findIndex(s => s._id === e.target.value);
+                      const dropoffIndex = routeStops.findIndex(s => s._id === selectedDropoff);
+                      if (dropoffIndex <= pickupIndex) {
+                        setSelectedDropoff('');
+                      }
+                    }
+                  }}
                   className="w-full border-2 border-green-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
                 >
                   <option value="">-- Chọn điểm đón --</option>
@@ -310,11 +347,23 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
                   className="w-full border-2 border-blue-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 >
                   <option value="">-- Chọn điểm trả --</option>
-                  {routeStops.map((stop, index) => (
-                    <option key={stop._id} value={stop._id}>
-                      {index + 1}. {stop.name} - {stop.address} ({stop.estimatedTime} phút)
-                    </option>
-                  ))}
+                  {routeStops.map((stop, index) => {
+                    // Only show stops that come after the selected pickup point
+                    const pickupIndex = routeStops.findIndex(s => s._id === selectedPickup);
+                    const canSelect = !selectedPickup || index > pickupIndex;
+                    
+                    return (
+                      <option 
+                        key={stop._id} 
+                        value={stop._id}
+                        disabled={!canSelect}
+                        style={{ color: canSelect ? 'inherit' : '#ccc' }}
+                      >
+                        {index + 1}. {stop.name} - {stop.address} ({stop.estimatedTime} phút)
+                        {!canSelect && ' (Phải sau điểm đón)'}
+                      </option>
+                    );
+                  })}
                 </select>
                 {selectedDropoff && (
                   <div className="mt-2 p-2 bg-blue-100 rounded text-sm">
