@@ -47,7 +47,7 @@ export const AdminDashboard: React.FC = () => {
     setLoading(true)
     setError('')
     try {
-      const res = await axios.get(`${apiBase}/api/tickets/admin`, {
+      const res = await axios.get(`${apiBase}/api/admin/tickets`, {
         headers: { Authorization: `Bearer ${accessToken}` }
       })
       setTickets(res.data.data || [])

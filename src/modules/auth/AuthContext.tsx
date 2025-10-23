@@ -19,8 +19,9 @@ type AuthState = {
 }
 
 type AuthContextType = AuthState & {
-  login: (email: string, password: string) => Promise<void>
-  register: (payload: any) => Promise<void>
+  isAuthenticated: boolean
+  login: (email: string, password: string) => Promise<{ user: AuthUser, accessToken: string }>
+  register: (payload: any) => Promise<{ user: AuthUser, accessToken: string }>
   logout: () => void
 }
 
@@ -50,12 +51,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const res = await axios.post(`${apiBase}/api/auth/login`, { email, password })
     const { user, accessToken } = res.data.data
     persist({ user, accessToken })
+    return { user, accessToken }
   }
 
   const register = async (payload: any) => {
     const res = await axios.post(`${apiBase}/api/auth/register`, payload)
     const { user, accessToken } = res.data.data
     persist({ user, accessToken })
+    return { user, accessToken }
   }
 
   const logout = () => {
@@ -64,6 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value: AuthContextType = {
     ...state,
+    isAuthenticated: !!state.user && !!state.accessToken,
     login,
     register,
     logout

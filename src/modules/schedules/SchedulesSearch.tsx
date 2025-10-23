@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { CalendarView } from './CalendarView'
 
@@ -13,11 +14,8 @@ export type Schedule = {
   status: 'active' | 'inactive' | 'cancelled'
 }
 
-type Props = {
-  onSelect: (id: string) => void
-}
-
-export const SchedulesSearch: React.FC<Props> = ({ onSelect }) => {
+export const SchedulesSearch: React.FC = () => {
+  const navigate = useNavigate()
   const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
   const [filters, setFilters] = React.useState({
@@ -287,13 +285,13 @@ export const SchedulesSearch: React.FC<Props> = ({ onSelect }) => {
                   </div>
                   <div className="flex flex-col gap-2">
                     <button 
-                      onClick={()=>onSelect(item._id)} 
+                      onClick={() => navigate(`/schedules/${item._id}`)} 
                       className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 font-semibold"
                     >
                       Xem chi tiết
                     </button>
                     <button 
-                      onClick={()=>onSelect(item._id)} 
+                      onClick={() => navigate(`/schedules/${item._id}`)} 
                       className="px-6 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
                     >
                       Đặt vé ngay

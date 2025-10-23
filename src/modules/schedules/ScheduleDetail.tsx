@@ -1,9 +1,12 @@
 import React from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { SeatMap } from '../booking/SeatMap'
 import { RouteMap } from './RouteMap'
 
-export const ScheduleDetail: React.FC<{ id: string, onBack: () => void, onBook?: () => void }> = ({ id, onBack, onBook }) => {
+export const ScheduleDetail: React.FC = () => {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
   const [data, setData] = React.useState<any>(null)
   const [stops, setStops] = React.useState<any[]>([])
@@ -11,6 +14,7 @@ export const ScheduleDetail: React.FC<{ id: string, onBack: () => void, onBook?:
   const [error, setError] = React.useState('')
 
   const load = async () => {
+    if (!id) return
     setLoading(true)
     setError('')
     try {
@@ -69,7 +73,7 @@ export const ScheduleDetail: React.FC<{ id: string, onBack: () => void, onBook?:
             <p className="text-blue-100">Thông tin chi tiết và đặt vé</p>
           </div>
           <button 
-            onClick={onBack} 
+            onClick={() => navigate('/schedules')} 
             className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
           >
             ← Quay lại
@@ -261,13 +265,13 @@ export const ScheduleDetail: React.FC<{ id: string, onBack: () => void, onBook?:
               </div>
               <div className="flex gap-3">
                 <button 
-                  onClick={onBack} 
+                  onClick={() => navigate('/schedules')} 
                   className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors font-medium"
                 >
                   ← Quay lại
                 </button>
                 <button 
-                  onClick={onBook} 
+                  onClick={() => navigate(`/booking/${id}`)} 
                   className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 font-semibold"
                 >
                   🎫 Đặt vé ngay

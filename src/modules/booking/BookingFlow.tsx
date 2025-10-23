@@ -1,16 +1,13 @@
 import React from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../auth/AuthContext'
 import { SeatMap } from './SeatMap'
 import { RouteMap } from '../schedules/RouteMap'
 
-type Props = {
-  scheduleId: string
-  onBack: () => void
-  onSuccess: () => void
-}
-
-export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) => {
+export const BookingFlow: React.FC = () => {
+  const { scheduleId } = useParams<{ scheduleId: string }>()
+  const navigate = useNavigate()
   const { accessToken, user } = useAuth()
   const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
@@ -156,7 +153,7 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
       }, {
         headers: { Authorization: `Bearer ${accessToken}` }
       })
-      onSuccess()
+      navigate('/mytickets')
     } catch (e: any) {
       setError(e?.response?.data?.message || 'Failed to create ticket')
     } finally {
@@ -179,7 +176,7 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
               <p className="text-red-100">Vui lòng đăng nhập để đặt vé</p>
             </div>
             <button 
-              onClick={onBack} 
+              onClick={() => navigate('/schedules')} 
               className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
             >
               ← Quay lại
@@ -193,7 +190,7 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
           <p className="text-gray-500 mb-6">Bạn cần đăng nhập vào tài khoản để có thể đặt vé xe khách</p>
           <div className="flex gap-3 justify-center">
             <button 
-              onClick={onBack} 
+              onClick={() => navigate('/schedules')} 
               className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 transition-colors font-medium"
             >
               ← Quay lại
@@ -214,7 +211,7 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
     <div className="space-y-4 bg-white border rounded p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Book Ticket</h2>
-        <button onClick={onBack} className="px-2 py-1 border rounded">Back</button>
+        <button onClick={() => navigate('/schedules')} className="px-2 py-1 border rounded">Back</button>
       </div>
 
       {/* Journey Information */}
@@ -556,7 +553,7 @@ export const BookingFlow: React.FC<Props> = ({ scheduleId, onBack, onSuccess }) 
       {/* Action Buttons */}
       <div className="flex justify-between items-center">
         <button
-          onClick={onBack}
+          onClick={() => navigate('/schedules')}
           className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
         >
           ← Back to Schedules
