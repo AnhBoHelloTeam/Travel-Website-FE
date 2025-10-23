@@ -1,6 +1,8 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 
-export const Home: React.FC<{ onNavigate?: (view: string) => void }> = ({ onNavigate }) => {
+export const Home: React.FC = () => {
+  const navigate = useNavigate()
   const [quickSearch, setQuickSearch] = React.useState({
     from: '',
     to: '',
@@ -9,7 +11,7 @@ export const Home: React.FC<{ onNavigate?: (view: string) => void }> = ({ onNavi
 
   const handleQuickSearch = () => {
     // Navigate to schedules with pre-filled filters
-    onNavigate && onNavigate('schedules')
+    navigate('/schedules')
   }
 
   const popularRoutes = [
@@ -45,13 +47,13 @@ export const Home: React.FC<{ onNavigate?: (view: string) => void }> = ({ onNavi
             </p>
             <div className="flex flex-wrap gap-3">
               <button 
-                onClick={()=>onNavigate && onNavigate('schedules')} 
+                onClick={() => navigate('/schedules')} 
                 className="px-6 py-3 bg-white text-blue-700 font-bold rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg"
               >
                 🚌 Tìm vé ngay
               </button>
               <button 
-                onClick={()=>onNavigate && onNavigate('register')} 
+                onClick={() => navigate('/register')} 
                 className="px-6 py-3 border-2 border-white/60 rounded-lg hover:bg-white/10 transition-all"
               >
                 Đăng ký miễn phí
@@ -109,7 +111,7 @@ export const Home: React.FC<{ onNavigate?: (view: string) => void }> = ({ onNavi
         <h2 className="text-2xl font-bold text-center mb-8">🌟 Tuyến đường phổ biến</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {popularRoutes.map((route, index) => (
-            <div key={index} className="bg-white rounded-xl border p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={()=>onNavigate && onNavigate('schedules')}>
+            <div key={index} className="bg-white rounded-xl border p-4 hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/schedules')}>
               <div className="flex items-center justify-between mb-2">
                 <span className="font-bold text-blue-600">{route.from}</span>
                 <span className="text-gray-400">→</span>
@@ -168,13 +170,13 @@ export const Home: React.FC<{ onNavigate?: (view: string) => void }> = ({ onNavi
         <p className="text-lg mb-6 opacity-90">Đăng ký ngay để nhận ưu đãi đặc biệt và trải nghiệm dịch vụ tốt nhất</p>
         <div className="flex flex-wrap justify-center gap-4">
           <button 
-            onClick={()=>onNavigate && onNavigate('register')} 
+            onClick={() => navigate('/register')} 
             className="px-6 py-3 bg-white text-green-600 font-bold rounded-lg hover:bg-gray-100 transition-all"
           >
             Đăng ký miễn phí
           </button>
           <button 
-            onClick={()=>onNavigate && onNavigate('schedules')} 
+            onClick={() => navigate('/schedules')} 
             className="px-6 py-3 border-2 border-white rounded-lg hover:bg-white/10 transition-all"
           >
             Xem lịch trình

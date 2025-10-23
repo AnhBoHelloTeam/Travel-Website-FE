@@ -1,8 +1,10 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from './AuthContext'
 
 export const Register: React.FC = () => {
   const { register } = useAuth()
+  const navigate = useNavigate()
   const [form, setForm] = React.useState({
     email: '', password: '', role: 'customer',
     profile: { firstName: '', lastName: '', phone: '', address: '' }
@@ -24,7 +26,21 @@ export const Register: React.FC = () => {
     setError('')
     setLoading(true)
     try {
-      await register(form)
+      const response = await register(form)
+      // Redirect based on user role
+      switch (response.user.role) {
+        case 'admin':
+          navigate('/admin')
+          break
+        case 'business':
+          navigate('/business')
+          break
+        case 'customer':
+          navigate('/mytickets')
+          break
+        default:
+          navigate('/')
+      }
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Register failed')
     } finally {

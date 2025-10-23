@@ -1,8 +1,11 @@
 import React from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from './AuthContext'
 
 export const Login: React.FC = () => {
-  const { login } = useAuth()
+  const { login, user } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [loading, setLoading] = React.useState(false)
@@ -13,7 +16,30 @@ export const Login: React.FC = () => {
     setError('')
     setLoading(true)
     try {
-      await login(email, password)
+      const response = await login(email, password)
+      // Get user data from login response
+      const userData = response.user
+      
+      // Redirect based on user role or intended destination
+      const from = location.state?.from?.pathname || '/'
+      if (from === '/login' || from === '/register' || from === '/') {
+        // Redirect to appropriate dashboard based on role
+        switch (userData.role) {
+          case 'admin':
+            navigate('/admin')
+            break
+          case 'business':
+            navigate('/business')
+            break
+          case 'customer':
+            navigate('/mytickets')
+            break
+          default:
+            navigate('/')
+        }
+      } else {
+        navigate(from)
+      }
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Login failed')
     } finally {

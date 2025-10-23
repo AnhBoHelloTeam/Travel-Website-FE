@@ -5,21 +5,7 @@ import { SeatMap } from '../booking/SeatMap'
 
 export const BusinessDashboard: React.FC = () => {
   const { accessToken, user } = useAuth()
-  const apiBase = import.meta.env.VITE_API_BASE_URL
-
-  // Check if user is business
-  if (!user || user.role !== 'business') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-md text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Access Denied</h2>
-          <p className="text-gray-600">You need to be logged in as a business user to access this page.</p>
-        </div>
-      </div>
-    )
-  }
-
-  const apiBaseUrl = apiBase || 'http://localhost:5000'
+  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
   const [activeTab, setActiveTab] = React.useState<'schedules' | 'stats' | 'profile'>('schedules')
   const [schedules, setSchedules] = React.useState<any[]>([])
