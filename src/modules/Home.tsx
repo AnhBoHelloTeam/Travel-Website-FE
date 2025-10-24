@@ -1,5 +1,8 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { TravelBlog } from '../../components/TravelBlog'
+import { FeaturedDestinations } from '../../components/FeaturedDestinations'
+import { TravelTips } from '../../components/TravelTips'
 
 export const Home: React.FC = () => {
   const navigate = useNavigate()
@@ -163,6 +166,15 @@ export const Home: React.FC = () => {
           ))}
         </div>
       </section>
+
+      {/* Featured Destinations */}
+      <FeaturedDestinations />
+
+      {/* Travel Blog */}
+      <TravelBlog />
+
+      {/* Travel Tips */}
+      <TravelTips />
 
       {/* CTA Section */}
       <section className="bg-gradient-to-r from-green-500 to-blue-600 rounded-2xl p-8 text-white text-center">
