@@ -1,8 +1,8 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { TravelBlog } from '../../components/TravelBlog'
-import { FeaturedDestinations } from '../../components/FeaturedDestinations'
-import { TravelTips } from '../../components/TravelTips'
+import { TravelBlog } from '../../components/TravelBlogNew'
+import { FeaturedDestinations } from '../../components/FeaturedDestinationsNew'
+import { TravelTips } from '../../components/TravelTipsNew'
 
 export const Home: React.FC = () => {
   const navigate = useNavigate()
