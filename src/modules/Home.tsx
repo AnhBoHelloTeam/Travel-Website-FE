@@ -45,27 +45,27 @@ export const Home: React.FC = () => {
               <span className="block text-yellow-300">nhanh chóng & an toàn</span>
             </h1>
             <p className="text-lg text-white/90 mb-6 leading-relaxed">
-              Tìm kiếm lịch trình, chọn ghế yêu thích, giữ chỗ 5 phút và thanh toán an toàn. 
+              Tìm kiếm lịch trình, chọn ghế yêu thích, giữ chỗ 5 phút và thanh toán an toàn.
               Hỗ trợ đầy đủ các loại xe từ tiết kiệm đến cao cấp.
             </p>
             <div className="flex flex-wrap gap-3">
-              <button 
-                onClick={() => navigate('/schedules')} 
+              <button
+                onClick={() => navigate('/schedules')}
                 className="px-6 py-3 bg-white text-blue-700 font-bold rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg"
               >
                 🚌 Tìm vé ngay
               </button>
-              <button 
-                onClick={() => navigate('/register')} 
+              <button
+                onClick={() => navigate('/register')}
                 className="px-6 py-3 border-2 border-white/60 rounded-lg hover:bg-white/10 transition-all"
               >
                 Đăng ký miễn phí
               </button>
             </div>
           </div>
-          
+
           {/* Quick Search Form */}
-          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 min-w-96 border border-white/20">
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 min-w-78 border border-white/20">
             <h3 className="text-xl font-bold mb-6 text-center">🔍 Tìm vé nhanh</h3>
             <div className="space-y-4">
               <div>
@@ -181,14 +181,14 @@ export const Home: React.FC = () => {
         <h2 className="text-3xl font-bold mb-4">Sẵn sàng cho chuyến đi của bạn?</h2>
         <p className="text-lg mb-6 opacity-90">Đăng ký ngay để nhận ưu đãi đặc biệt và trải nghiệm dịch vụ tốt nhất</p>
         <div className="flex flex-wrap justify-center gap-4">
-          <button 
-            onClick={() => navigate('/register')} 
+          <button
+            onClick={() => navigate('/register')}
             className="px-6 py-3 bg-white text-green-600 font-bold rounded-lg hover:bg-gray-100 transition-all"
           >
             Đăng ký miễn phí
           </button>
-          <button 
-            onClick={() => navigate('/schedules')} 
+          <button
+            onClick={() => navigate('/schedules')}
             className="px-6 py-3 border-2 border-white rounded-lg hover:bg-white/10 transition-all"
           >
             Xem lịch trình
